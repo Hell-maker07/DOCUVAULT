@@ -1,0 +1,48 @@
+{
+  "name": "docuvault",
+  "version": "0.1.0",
+  "description": "DocuVault: role-based secure document management system with deny-by-default access, SHA-256 integrity and a hash-chained audit log",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:migrate": "node scripts/db.js migrate",
+    "db:reset": "node scripts/db.js reset",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "db:seed": "node scripts/db.js seed"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.10",
+    "express": "^4.22.3",
+    "express-rate-limit": "^8.7.4",
+    "helmet": "^8.3.0",
+    "pg": "^8.23.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.14.0",
+    "jest": "^30.5.2",
+    "prettier": "^3.10.1",
+    "supertest": "^7.3.2"
+  },
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "setupFiles": [
+      "<rootDir>/tests/env.js"
+    ]
+  }
+}
