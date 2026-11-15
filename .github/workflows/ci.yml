@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: docuvault
+          POSTGRES_PASSWORD: docuvault
+          POSTGRES_DB: docuvault_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U docuvault"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://docuvault:docuvault@localhost:5432/docuvault_dev
+      DATABASE_URL_TEST: postgres://docuvault:docuvault@localhost:5432/docuvault_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx prettier --check .
+      - run: npm test
