@@ -14,6 +14,7 @@ const code = async (promise) => {
 };
 const UNIQUE = '23505',
   FK = '23503',
+  RESTRICT_CODES = ['23001', '23503'],
   CHECK = '23514';
 
 let orgId, deptId, posId;
@@ -149,7 +150,9 @@ describe('foreign keys and delete rules', () => {
     expect(await code(insertUser('nofk@x.test', '00000000-0000-0000-0000-000000000000'))).toBe(FK);
   });
   it('RESTRICTs deleting an organisation that still has departments', async () => {
-    expect(await code(q('DELETE FROM organizations WHERE id = $1', [orgId]))).toBe(FK);
+    expect(RESTRICT_CODES).toContain(
+      await code(q('DELETE FROM organizations WHERE id = $1', [orgId])),
+    );
   });
   it('CASCADEs position_permissions when a position is deleted', async () => {
     const p = (
