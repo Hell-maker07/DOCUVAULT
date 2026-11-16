@@ -9,9 +9,11 @@ function fromPostgres(err) {
   switch (err.code) {
     case '23505':
       return new AppError('Resource already exists', 409, 'CONFLICT');
+    case '23001': // restrict_violation (PostgreSQL 18+ reports ON DELETE RESTRICT here)
+      return new AppError('Resource is still referenced and cannot be removed', 409, 'CONFLICT');
     case '23503':
       return new AppError(
-        'Referenced resource does not exist or is in use',
+        'Referenced resource does not exist',
         400,
         'VALIDATION_ERROR',
       );

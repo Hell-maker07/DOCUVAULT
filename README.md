@@ -22,7 +22,7 @@ Built step by step, alternating between members. Each step is committed as soon 
 | #   | Owner     | Step                                                   | Status  |
 | --- | --------- | ------------------------------------------------------ | ------- |
 | 1   | Saubhagya | Express project + identity SQL schema                  | ✅ Done |
-| 2   | Sakshi    | Vault SQL schema + immutability triggers               | ⏳      |
+| 2   | Sakshi    | Vault SQL schema + immutability triggers               | 🧪 Verify locally |
 | 3   | Saubhagya | Registration & login API (JWT, bcrypt)                 | ⏳      |
 | 4   | Sakshi    | File storage connection, multer, SHA-256 utility       | ⏳      |
 | 5   | Saubhagya | RBAC access middleware (clearance, scope, permissions) | ⏳      |
@@ -36,14 +36,14 @@ Built step by step, alternating between members. Each step is committed as soon 
 
 Node.js 20+, Express 4, PostgreSQL (Neon in production), `pg` with plain SQL migrations,
 `zod` validation, `helmet`, `cors`, `express-rate-limit`; Node `crypto` for SHA-256, Ed25519 and
-AES-256-GCM; Jest + Supertest; React + Vite (later steps). File storage is decided at Step 4.
+AES-256-GCM; Jest + Supertest; React + Vite (later steps). File storage is finalized in Step 4: the execution plan names OpenStack Swift, while the master architecture document names Supabase Storage, so the team must reconcile that choice before integrating storage.
 
 ## Getting started
 
 ```bash
 npm install
 cp .env.example .env        # then fill in DATABASE_URL and DATABASE_URL_TEST
-npm run db:reset            # drop, migrate and seed reference data (refused in production)
+npm run db:reset            # destructive: only use on disposable dev/test databases
 npm run dev                 # http://localhost:3000/api/v1/health
 npm test                    # needs DATABASE_URL_TEST (a database different from DATABASE_URL)
 ```
@@ -72,7 +72,7 @@ tests/                     Jest suites
 docs/                      ER diagram and design documents
 ```
 
-## Database (Step 1: identity tables)
+## Database
 
 `001_identity.sql` creates `organizations`, `classification_levels` (natural key `level`),
 `permissions`, `departments`, `positions`, `users`, `position_permissions` with primary and foreign
@@ -81,6 +81,26 @@ lower-case email, non-blank names), `ON DELETE RESTRICT/CASCADE` rules, FK index
 `updated_at` trigger. `signatures` references `document_versions`, so it arrives with Step 7.
 See [`docs/er-diagram.svg`](docs/er-diagram.svg). The constraints are proven by
 `tests/schema.identity.test.js`.
+
+### Vault tables and immutability (Step 2)
+
+`002_vault.sql` adds `document_types`, `workspaces`, `workspace_members`, `documents`,
+`document_versions`, `access_grants` and `audit_logs` (14 project tables so far; `signatures` is the 15th). The separate `schema_migrations` table is internal migration bookkeeping and is not counted as a project table.
+
+- **Integrity rules in the database:** `UNIQUE (document_id, version_no)`, `UNIQUE (org_id, seq)`,
+  workspace status and audit action/outcome `CHECK` lists, `sha256`/`hash`/`prev_hash` must be 64
+  lower-case hex characters, `expires_at > created_at` on grants, `ON DELETE RESTRICT` on documents.
+- **Full-text search:** `documents.search_vec` is a generated `tsvector` with a `GIN` index
+  (`idx_documents_search_vec`); a test checks the planner uses it.
+- **Append-only history:** `003_immutability.sql` installs triggers that reject `UPDATE`, `DELETE`
+  and `TRUNCATE` (also via `TRUNCATE ... CASCADE`) on `document_versions` and `audit_logs`.
+  It also prevents deleting or truncating a `documents` identity row, including one that has not
+  received its first version; document metadata updates remain possible.
+- Proven by `tests/schema.vault.test.js`. Because document identities, versions and audit rows
+  cannot be removed, tests rebuild the disposable test database with `db:reset`.
+- Rules that need other tables or request context (30-day grant limit, position/department
+  organisation consistency, workspace-member scope, and document-type/workspace organisation
+  consistency) are enforced in the service layer, not by a column constraint.
 
 ## API
 
