@@ -22,8 +22,8 @@ Built step by step, alternating between members. Each step is committed as soon 
 | #   | Owner     | Step                                                   | Status  |
 | --- | --------- | ------------------------------------------------------ | ------- |
 | 1   | Saubhagya | Express project + identity SQL schema                  | ✅ Done |
-| 2   | Sakshi    | Vault SQL schema + immutability triggers               | 🧪 Verify locally |
-| 3   | Saubhagya | Registration & login API (JWT, bcrypt)                 | ⏳      |
+| 2   | Sakshi    | Vault SQL schema + immutability triggers               | ✅ Done |
+| 3   | Saubhagya | Registration & login API (JWT, bcrypt)                 | ✅ Done |
 | 4   | Sakshi    | File storage connection, multer, SHA-256 utility       | ⏳      |
 | 5   | Saubhagya | RBAC access middleware (clearance, scope, permissions) | ⏳      |
 | 6   | Sakshi    | Audit hash-chain logic                                 | ⏳      |
@@ -107,10 +107,13 @@ See [`docs/er-diagram.svg`](docs/er-diagram.svg). The constraints are proven by
 Base path `/api/v1`. All responses use `{ success, message, data }` or
 `{ success: false, error: { code, message, details } }`.
 
-| Endpoint      | Status                                     |
-| ------------- | ------------------------------------------ |
-| `GET /health` | ✅ Live                                    |
-| 24 others     | Planned in later steps (see master design) |
+| Endpoint           | Method | Access    | Status   | Description                                             |
+| ------------------ | ------ | --------- | -------- | ------------------------------------------------------- |
+| `/health`          | GET    | Public    | ✅ Live  | Liveness probe; does not touch database                 |
+| `/orgs`            | POST   | Public    | ✅ Live  | Bootstrap organisation with root admin + JWT (AP-01)    |
+| `/auth/login`      | POST   | Public    | ✅ Live  | Credential verification and JWT token issuance (AP-01)  |
+| `/auth/me`         | GET    | Signed in | ✅ Live  | Current user, clearance, position & permissions (AP-01) |
+| 21 other endpoints | Various| Various   | Planned  | Planned in later steps (see master design)              |
 
 ## Security principles
 
