@@ -34,6 +34,7 @@ From the repository root, copy the archive into the project or use its full Down
    ```
 
    The database-backed Jest suites run `db:reset` against `DATABASE_URL_TEST`. This destroys and rebuilds the test database, so never point `DATABASE_URL_TEST` at a database containing data you need.
+
 4. In pgAdmin, refresh the development database and confirm the 14 project tables plus the internal `schema_migrations` table. `signatures` is deliberately deferred to Step 7 because it references `document_versions`.
 
 Do **not** run `npm run db:reset` against your development or shared integration branch. Use `npm run db:migrate` there.

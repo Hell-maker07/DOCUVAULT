@@ -11,7 +11,17 @@
  * @param {object} params
  */
 export async function createOrgBootstrap(tx, params) {
-  const { name, orgType, departmentCode, departmentName, adminName, email, passwordHash, publicKey, privateKeyEnc } = params;
+  const {
+    name,
+    orgType,
+    departmentCode,
+    departmentName,
+    adminName,
+    email,
+    passwordHash,
+    publicKey,
+    privateKeyEnc,
+  } = params;
 
   // 1. Insert organisation
   const orgRes = await tx.query(

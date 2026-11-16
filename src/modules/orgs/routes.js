@@ -7,11 +7,6 @@ import { registerOrgHandler } from './controller.js';
 
 const router = Router();
 
-router.post(
-  '/',
-  authRateLimiter,
-  validate(registerOrgSchema),
-  asyncHandler(registerOrgHandler),
-);
+router.post('/', authRateLimiter, validate(registerOrgSchema), asyncHandler(registerOrgHandler));
 
 export default router;

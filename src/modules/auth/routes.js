@@ -8,17 +8,8 @@ import { loginHandler, meHandler } from './controller.js';
 
 const router = Router();
 
-router.post(
-  '/login',
-  authRateLimiter,
-  validate(loginSchema),
-  asyncHandler(loginHandler),
-);
+router.post('/login', authRateLimiter, validate(loginSchema), asyncHandler(loginHandler));
 
-router.get(
-  '/me',
-  authenticate,
-  asyncHandler(meHandler),
-);
+router.get('/me', authenticate, asyncHandler(meHandler));
 
 export default router;

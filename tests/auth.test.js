@@ -39,9 +39,7 @@ describe('AP-01 Authentication & Organisation Bootstrap', () => {
   describe('POST /api/v1/orgs (Organisation Registration)', () => {
     it('bootstraps an organisation: returns 201, valid JWT, and grants administrator all 7 permissions', async () => {
       const payload = sampleOrg();
-      const res = await request(app)
-        .post('/api/v1/orgs')
-        .send(payload);
+      const res = await request(app).post('/api/v1/orgs').send(payload);
 
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
@@ -76,15 +74,7 @@ describe('AP-01 Authentication & Organisation Bootstrap', () => {
       );
       const permCodes = permRows.map((r) => r.code);
       expect(permCodes).toHaveLength(7);
-      expect(permCodes).toEqual([
-        'AUDIT',
-        'EDIT',
-        'MANAGE_ORG',
-        'SHARE',
-        'SIGN',
-        'UPLOAD',
-        'VIEW',
-      ]);
+      expect(permCodes).toEqual(['AUDIT', 'EDIT', 'MANAGE_ORG', 'SHARE', 'SIGN', 'UPLOAD', 'VIEW']);
 
       // Verify user has Ed25519 key pair stored and private key is encrypted
       const { rows: userRows } = await q(
@@ -93,7 +83,9 @@ describe('AP-01 Authentication & Organisation Bootstrap', () => {
         [userId],
       );
       expect(userRows[0].public_key).toContain('BEGIN PUBLIC KEY');
-      expect(userRows[0].private_key_enc).toMatch(/^[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+$/);
+      expect(userRows[0].private_key_enc).toMatch(
+        /^[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+$/,
+      );
       // Ensure private key can be decrypted using KEY_ENC_SECRET
       const decryptedPriv = unwrap(userRows[0].private_key_enc);
       expect(decryptedPriv).toContain('BEGIN PRIVATE KEY');
@@ -174,12 +166,10 @@ describe('AP-01 Authentication & Organisation Bootstrap', () => {
     });
 
     it('logs in successfully with valid credentials and returns accessToken and user details', async () => {
-      const res = await request(app)
-        .post('/api/v1/auth/login')
-        .send({
-          email: testUser.email,
-          password: testUser.password,
-        });
+      const res = await request(app).post('/api/v1/auth/login').send({
+        email: testUser.email,
+        password: testUser.password,
+      });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -189,12 +179,10 @@ describe('AP-01 Authentication & Organisation Bootstrap', () => {
 
     it('returns 401 with the exact same error message for unknown email and wrong password', async () => {
       // 1. Wrong password
-      const wrongPassRes = await request(app)
-        .post('/api/v1/auth/login')
-        .send({
-          email: testUser.email,
-          password: 'IncorrectPassword999!',
-        });
+      const wrongPassRes = await request(app).post('/api/v1/auth/login').send({
+        email: testUser.email,
+        password: 'IncorrectPassword999!',
+      });
 
       // 2. Unknown email
       const unknownEmailRes = await request(app)
@@ -219,14 +207,14 @@ describe('AP-01 Authentication & Organisation Bootstrap', () => {
       await request(app).post('/api/v1/orgs').send(deactUser);
 
       // Deactivate user in database
-      await q(`UPDATE users SET is_active = false WHERE email = $1`, [deactUser.email.toLowerCase()]);
+      await q(`UPDATE users SET is_active = false WHERE email = $1`, [
+        deactUser.email.toLowerCase(),
+      ]);
 
-      const res = await request(app)
-        .post('/api/v1/auth/login')
-        .send({
-          email: deactUser.email,
-          password: deactUser.password,
-        });
+      const res = await request(app).post('/api/v1/auth/login').send({
+        email: deactUser.email,
+        password: deactUser.password,
+      });
 
       expect(res.status).toBe(401);
       expect(res.body.error.code).toBe('UNAUTHENTICATED');
@@ -300,11 +288,11 @@ describe('AP-01 Authentication & Organisation Bootstrap', () => {
       const token = reg.body.data.accessToken;
 
       // Deactivate user in database
-      await q(`UPDATE users SET is_active = false WHERE email = $1`, [tempUser.email.toLowerCase()]);
+      await q(`UPDATE users SET is_active = false WHERE email = $1`, [
+        tempUser.email.toLowerCase(),
+      ]);
 
-      const res = await request(app)
-        .get('/api/v1/auth/me')
-        .set('Authorization', `Bearer ${token}`);
+      const res = await request(app).get('/api/v1/auth/me').set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(401);
       expect(res.body.error.code).toBe('UNAUTHENTICATED');

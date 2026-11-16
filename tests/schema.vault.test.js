@@ -156,9 +156,7 @@ describe('documents', () => {
     expect(e.code).toBe(CHECK);
   });
   it('does not allow an empty document type name', async () => {
-    const e = await err(
-      q(`INSERT INTO document_types (org_id, name) VALUES ($1,'  ')`, [orgId]),
-    );
+    const e = await err(q(`INSERT INTO document_types (org_id, name) VALUES ($1,'  ')`, [orgId]));
     expect(e.code).toBe(CHECK);
   });
   it('prevents deleting a document even before its first version exists (BR-07)', async () => {

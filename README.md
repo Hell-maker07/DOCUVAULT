@@ -107,13 +107,13 @@ See [`docs/er-diagram.svg`](docs/er-diagram.svg). The constraints are proven by
 Base path `/api/v1`. All responses use `{ success, message, data }` or
 `{ success: false, error: { code, message, details } }`.
 
-| Endpoint           | Method | Access    | Status   | Description                                             |
-| ------------------ | ------ | --------- | -------- | ------------------------------------------------------- |
-| `/health`          | GET    | Public    | ✅ Live  | Liveness probe; does not touch database                 |
-| `/orgs`            | POST   | Public    | ✅ Live  | Bootstrap organisation with root admin + JWT (AP-01)    |
-| `/auth/login`      | POST   | Public    | ✅ Live  | Credential verification and JWT token issuance (AP-01)  |
-| `/auth/me`         | GET    | Signed in | ✅ Live  | Current user, clearance, position & permissions (AP-01) |
-| 21 other endpoints | Various| Various   | Planned  | Planned in later steps (see master design)              |
+| Endpoint           | Method  | Access    | Status  | Description                                             |
+| ------------------ | ------- | --------- | ------- | ------------------------------------------------------- |
+| `/health`          | GET     | Public    | ✅ Live | Liveness probe; does not touch database                 |
+| `/orgs`            | POST    | Public    | ✅ Live | Bootstrap organisation with root admin + JWT (AP-01)    |
+| `/auth/login`      | POST    | Public    | ✅ Live | Credential verification and JWT token issuance (AP-01)  |
+| `/auth/me`         | GET     | Signed in | ✅ Live | Current user, clearance, position & permissions (AP-01) |
+| 21 other endpoints | Various | Various   | Planned | Planned in later steps (see master design)              |
 
 ## Security principles
 

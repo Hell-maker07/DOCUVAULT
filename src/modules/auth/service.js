@@ -61,11 +61,7 @@ export async function login({ email, password }, ip = null) {
   }).catch((err) => console.error('Audit write error on login success:', err));
 
   // Generate 1-hour JWT token
-  const accessToken = jwt.sign(
-    { sub: user.id },
-    config.JWT_SECRET,
-    { expiresIn: '1h' },
-  );
+  const accessToken = jwt.sign({ sub: user.id }, config.JWT_SECRET, { expiresIn: '1h' });
 
   return {
     accessToken,

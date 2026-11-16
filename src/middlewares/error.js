@@ -12,11 +12,7 @@ function fromPostgres(err) {
     case '23001': // restrict_violation (PostgreSQL 18+ reports ON DELETE RESTRICT here)
       return new AppError('Resource is still referenced and cannot be removed', 409, 'CONFLICT');
     case '23503':
-      return new AppError(
-        'Referenced resource does not exist',
-        400,
-        'VALIDATION_ERROR',
-      );
+      return new AppError('Referenced resource does not exist', 400, 'VALIDATION_ERROR');
     case '23514':
     case '22P02':
       return new AppError('Value rejected by data constraints', 400, 'VALIDATION_ERROR');

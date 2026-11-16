@@ -56,11 +56,7 @@ export async function registerOrganization(input, ip = null) {
   });
 
   // 4. Issue 1-hour JWT access token for the root administrator
-  const accessToken = jwt.sign(
-    { sub: user.id },
-    config.JWT_SECRET,
-    { expiresIn: '1h' },
-  );
+  const accessToken = jwt.sign({ sub: user.id }, config.JWT_SECRET, { expiresIn: '1h' });
 
   return {
     accessToken,

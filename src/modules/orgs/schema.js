@@ -40,7 +40,10 @@ export const registerOrgSchema = z
       department: dept,
       departmentCode:
         data.departmentCode?.trim() ||
-        dept.replace(/[^A-Za-z0-9]/g, '').slice(0, 4).toUpperCase() ||
+        dept
+          .replace(/[^A-Za-z0-9]/g, '')
+          .slice(0, 4)
+          .toUpperCase() ||
         'ADMIN',
       adminName: (data.adminName || data.fullName).trim(),
       email: data.email.trim().toLowerCase(),
