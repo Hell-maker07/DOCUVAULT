@@ -427,3 +427,52 @@ export async function decideWorkspace(
 
   return { ok: true, user: u, workspace: w };
 }
+
+/**
+ * Builds the parameterised SQL predicate representing the access policy for search and list queries (AP-09).
+ *
+ * @param {object} user
+ * @param {string} user.orgId
+ * @param {number} user.clearance
+ * @param {string} user.deptScope
+ * @param {string} user.departmentId
+ * @param {string} user.id
+ * @param {number} startIdx Index of first SQL bound parameter
+ * @param {string} [docAlias='d'] Table alias for documents
+ * @param {string} [wsAlias='w'] Table alias for workspaces
+ * @param {string} [deptAlias='dp'] Table alias for departments
+ * @returns {{ sql: string, params: unknown[] }}
+ */
+export function buildAccessFilter(
+  user,
+  startIdx = 1,
+  docAlias = 'd',
+  wsAlias = 'w',
+  deptAlias = 'dp',
+) {
+  const p1 = `$${startIdx}`;
+  const p2 = `$${startIdx + 1}`;
+  const p3 = `$${startIdx + 2}`;
+  const p4 = `$${startIdx + 3}`;
+  const p5 = `$${startIdx + 4}`;
+
+  const sql = `
+    ${deptAlias}.org_id = ${p1}
+    AND ${docAlias}.classification <= ${p2}
+    AND (
+      ${p3} = 'ORG'
+      OR (${p3} = 'OWN_DEPT' AND ${wsAlias}.department_id = ${p4})
+      OR EXISTS (
+        SELECT 1 FROM workspace_members wm
+        WHERE wm.workspace_id = ${wsAlias}.id AND wm.user_id = ${p5}
+      )
+      OR EXISTS (
+        SELECT 1 FROM access_grants ag
+        WHERE ag.document_id = ${docAlias}.id AND ag.user_id = ${p5} AND ag.expires_at > now()
+      )
+    )
+  `.trim();
+
+  const params = [user.orgId, user.clearance, user.deptScope, user.departmentId, user.id];
+  return { sql, params };
+}
