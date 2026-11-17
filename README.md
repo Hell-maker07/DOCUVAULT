@@ -27,7 +27,7 @@ Built step by step, alternating between members. Each step is committed as soon 
 | 4   | Sakshi    | File storage connection, multer, SHA-256 utility       | ✅ Done |
 | 5   | Saubhagya | RBAC access middleware (clearance, scope, permissions) | ✅ Done |
 | 6   | Sakshi    | Audit hash-chain logic                                 | ✅ Done |
-| 7   | Saubhagya | Ed25519 signatures (+ `signatures` table migration)    | ⏳      |
+| 7   | Saubhagya | Ed25519 signatures (+ `signatures` table migration)    | ✅ Done |
 | 8   | Sakshi    | Document upload and verified download APIs             | ⏳      |
 | 9   | Saubhagya | React frontend: Auth UI + Admin dashboard              | ⏳      |
 | 10  | Sakshi    | React Vault UI, upload form, audit viewer              | ⏳      |
@@ -148,21 +148,47 @@ Step 6 implements the tamper-evident, cryptographic hash-chain engine and audit 
   - Analytics endpoints: `GET /api/v1/audit/stats/denied-by-position` (DE-05 Q07) and `GET /api/v1/audit/stats/active-users` (DE-05 Q08).
 - Proven by comprehensive acceptance tests in `tests/audit.test.js` (24 tests covering genesis, chaining, concurrency, tamper detection, immutability, and tenant isolation).
 
+### Digital Signatures & Ed25519 PKI Architecture (Step 7)
+
+Step 7 implements digital signature creation, verification, and database immutability (AP-10, BR-12, BR-09, DE-05 Q06):
+
+- **Database Migration (`db/migrations/004_signatures.sql`):**
+  - Creates `signatures` table linking `version_id` (`document_versions`) and `signer_id` (`users`).
+  - Enforces `UNIQUE(version_id, signer_id)`: exactly one signature per person per version (BR-12).
+  - Immutability row and statement triggers (`signatures_immutable`, `signatures_no_truncate`) forbid `UPDATE`, `DELETE`, and `TRUNCATE`.
+- **Pre-Signing Integrity Verification (BR-09):**
+  - Before signing, the system re-fetches file bytes from storage and re-verifies the SHA-256 fingerprint against `version.sha256`.
+  - Any mismatch blocks signing with `409 INTEGRITY_FAILURE` and writes a `VERIFY FAILED` (`TAMPERED`) audit record.
+- **Asymmetric Signing & Verification Flow (`src/modules/signatures/`):**
+  - Decrypts signer's Ed25519 private key from `users.private_key_enc` using AES-256-GCM.
+  - Generates Base64 Ed25519 signature over the version's stored SHA-256 hex string.
+  - Atomically records signature and appends `SIGN` (`ALLOWED`) audit entry in a single database transaction.
+- **REST Endpoints:**
+  - `POST /api/v1/documents/:id/versions/:no/sign`: Signs document version (enforces `SIGN` permission, RBAC scope & clearance).
+  - `GET /api/v1/documents/:id/versions/:no/signatures`: Retrieves and dynamically verifies each signature on the version with the signer's public key (enforces `VIEW` permission).
+  - `GET /api/v1/signatures/stats/unsigned-latest`: DE-05 Q06 analytics endpoint returning latest document versions with zero signatures via SQL anti-join.
+  - `GET /api/v1/signatures/:id/verify`: Standalone signature verification by ID.
+- Proven by comprehensive acceptance tests in `tests/signatures.test.js` (18 tests covering keypairs, immutability, anti-tampering, duplicate rejection, and RBAC).
+
 ## API
 
 Base path `/api/v1`. All responses use `{ success, message, data }` or
 `{ success: false, error: { code, message, details } }`.
 
-| Endpoint              | Method  | Access    | Status  | Description                                             |
-| --------------------- | ------- | --------- | ------- | ------------------------------------------------------- |
-| `/health`             | GET     | Public    | ✅ Live | Liveness probe; does not touch database                 |
-| `/orgs`               | POST    | Public    | ✅ Live | Bootstrap organisation with root admin + JWT (AP-01)    |
-| `/auth/login`         | POST    | Public    | ✅ Live | Credential verification and JWT token issuance (AP-01)  |
-| `/auth/me`            | GET     | Signed in | ✅ Live | Current user, clearance, position & permissions (AP-01) |
-| `/audit`              | GET     | AUDIT     | ✅ Live | Filtered & paginated audit log entries (AP-08)          |
-| `/audit/verify-chain` | GET     | AUDIT     | ✅ Live | Cryptographic chain recomputation & break detection     |
-| `/audit/:seq`         | GET     | AUDIT     | ✅ Live | Individual audit entry by sequence number               |
-| 18 other endpoints    | Various | Various   | Planned | Planned in later steps (see master design)              |
+| Endpoint                                 | Method  | Access    | Status  | Description                                             |
+| ---------------------------------------- | ------- | --------- | ------- | ------------------------------------------------------- |
+| `/health`                                | GET     | Public    | ✅ Live | Liveness probe; does not touch database                 |
+| `/orgs`                                  | POST    | Public    | ✅ Live | Bootstrap organisation with root admin + JWT (AP-01)    |
+| `/auth/login`                            | POST    | Public    | ✅ Live | Credential verification and JWT token issuance (AP-01)  |
+| `/auth/me`                               | GET     | Signed in | ✅ Live | Current user, clearance, position & permissions (AP-01) |
+| `/audit`                                 | GET     | AUDIT     | ✅ Live | Filtered & paginated audit log entries (AP-08)          |
+| `/audit/verify-chain`                    | GET     | AUDIT     | ✅ Live | Cryptographic chain recomputation & break detection     |
+| `/audit/:seq`                            | GET     | AUDIT     | ✅ Live | Individual audit entry by sequence number               |
+| `/documents/:id/versions/:no/sign`       | POST    | SIGN      | ✅ Live | Signs document version with Ed25519 signature (AP-10)   |
+| `/documents/:id/versions/:no/signatures` | GET     | VIEW      | ✅ Live | Verifies each signature on document version (AP-10)     |
+| `/signatures/stats/unsigned-latest`      | GET     | Signed in | ✅ Live | Latest document versions without signatures (DE-05 Q06) |
+| `/signatures/:id/verify`                 | GET     | Signed in | ✅ Live | Cryptographic verification of single signature by ID    |
+| 14 other endpoints                       | Various | Various   | Planned | Planned in later steps (see master design)              |
 
 ## Security principles
 
