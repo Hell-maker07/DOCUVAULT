@@ -26,7 +26,7 @@ Built step by step, alternating between members. Each step is committed as soon 
 | 3   | Saubhagya | Registration & login API (JWT, bcrypt)                 | ✅ Done |
 | 4   | Sakshi    | File storage connection, multer, SHA-256 utility       | ✅ Done |
 | 5   | Saubhagya | RBAC access middleware (clearance, scope, permissions) | ✅ Done |
-| 6   | Sakshi    | Audit hash-chain logic                                 | ⏳      |
+| 6   | Sakshi    | Audit hash-chain logic                                 | ✅ Done |
 | 7   | Saubhagya | Ed25519 signatures (+ `signatures` table migration)    | ⏳      |
 | 8   | Sakshi    | Document upload and verified download APIs             | ⏳      |
 | 9   | Saubhagya | React frontend: Auth UI + Admin dashboard              | ⏳      |
@@ -123,18 +123,46 @@ Step 4 sets up the physical file storage adapters, the upload middleware and the
   - `buildStoragePath`: Collision-resistant, safe version path generator (`orgs/{orgId}/docs/{docId}/v{versionNo}_{cleanName}`).
 - Proven by `tests/hash.test.js`, `tests/upload.test.js`, and `tests/storage.test.js`.
 
+### Audit Log Hash-Chain Architecture & Verification (Step 6)
+
+Step 6 implements the tamper-evident, cryptographic hash-chain engine and audit verification system (AP-08, DE-05):
+
+- **Cryptographic Chaining Formula (`src/modules/audit/auditWriter.js`):**
+  - Every event is hashed deterministically: `SHA-256(prev_hash + canonicalJson([seq, org_id, actor_id, action, entity_type, entity_id, outcome, details, created_at]))`.
+  - Genesis link: The first row for an organisation always starts at `seq = 1` with `prev_hash = '0'.repeat(64)`.
+  - Recursive key sorting: `canonicalJson` ensures formatting or JSON key-order differences never diverge hashes.
+- **Concurrent Serialisation & Integrity Protection:**
+  - Inside the caller's transaction, `SELECT id FROM organizations WHERE id = $1 FOR UPDATE` locks the organisation row so concurrent writes serialize cleanly, forming a contiguous sequence with no duplicate sequence numbers and no gaps.
+  - Database triggers (`003_immutability.sql`) block direct `UPDATE`, `DELETE`, and `TRUNCATE` operations on `audit_logs`.
+- **Chain Verification Service (`src/modules/audit/service.js`):**
+  - `verifyAuditChain(orgId)` recomputes hashes from seq 1 to head, checking:
+    1. Strict sequence continuity (`seq === expectedSeq`).
+    2. Pointer integrity (`prev_hash === expectedPrevHash`).
+    3. Payload cryptographic fidelity (`actualHash === recomputedHash`).
+  - Pinpoints the exact sequence number and failure mode (`HASH_MISMATCH`, `BROKEN_LINK`, `SEQUENCE_GAP`) if tampering occurs.
+- **Audit REST APIs & Analytics (`src/modules/audit/`):**
+  - Protected with `authenticate` and `requirePermission('AUDIT')`. Unauthorized attempts return 403 and write `ACCESS_DENIED` to `audit_logs`.
+  - `GET /api/v1/audit/verify-chain`: Recomputes the chain and returns `{ verified: true, count, lastSeq, headHash }`.
+  - `GET /api/v1/audit`: Paginated and parameterised querying filtered by `action`, `actorId`, `outcome`, `entityType`, and ISO date range (`from`/`to`).
+  - `GET /api/v1/audit/:seq`: Fetch specific audit entry by sequence number.
+  - Analytics endpoints: `GET /api/v1/audit/stats/denied-by-position` (DE-05 Q07) and `GET /api/v1/audit/stats/active-users` (DE-05 Q08).
+- Proven by comprehensive acceptance tests in `tests/audit.test.js` (24 tests covering genesis, chaining, concurrency, tamper detection, immutability, and tenant isolation).
+
 ## API
 
 Base path `/api/v1`. All responses use `{ success, message, data }` or
 `{ success: false, error: { code, message, details } }`.
 
-| Endpoint           | Method  | Access    | Status  | Description                                             |
-| ------------------ | ------- | --------- | ------- | ------------------------------------------------------- |
-| `/health`          | GET     | Public    | ✅ Live | Liveness probe; does not touch database                 |
-| `/orgs`            | POST    | Public    | ✅ Live | Bootstrap organisation with root admin + JWT (AP-01)    |
-| `/auth/login`      | POST    | Public    | ✅ Live | Credential verification and JWT token issuance (AP-01)  |
-| `/auth/me`         | GET     | Signed in | ✅ Live | Current user, clearance, position & permissions (AP-01) |
-| 21 other endpoints | Various | Various   | Planned | Planned in later steps (see master design)              |
+| Endpoint              | Method  | Access    | Status  | Description                                             |
+| --------------------- | ------- | --------- | ------- | ------------------------------------------------------- |
+| `/health`             | GET     | Public    | ✅ Live | Liveness probe; does not touch database                 |
+| `/orgs`               | POST    | Public    | ✅ Live | Bootstrap organisation with root admin + JWT (AP-01)    |
+| `/auth/login`         | POST    | Public    | ✅ Live | Credential verification and JWT token issuance (AP-01)  |
+| `/auth/me`            | GET     | Signed in | ✅ Live | Current user, clearance, position & permissions (AP-01) |
+| `/audit`              | GET     | AUDIT     | ✅ Live | Filtered & paginated audit log entries (AP-08)          |
+| `/audit/verify-chain` | GET     | AUDIT     | ✅ Live | Cryptographic chain recomputation & break detection     |
+| `/audit/:seq`         | GET     | AUDIT     | ✅ Live | Individual audit entry by sequence number               |
+| 18 other endpoints    | Various | Various   | Planned | Planned in later steps (see master design)              |
 
 ## Security principles
 
