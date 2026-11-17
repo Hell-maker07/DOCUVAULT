@@ -24,7 +24,7 @@ Built step by step, alternating between members. Each step is committed as soon 
 | 1   | Saubhagya | Express project + identity SQL schema                  | ✅ Done |
 | 2   | Sakshi    | Vault SQL schema + immutability triggers               | ✅ Done |
 | 3   | Saubhagya | Registration & login API (JWT, bcrypt)                 | ✅ Done |
-| 4   | Sakshi    | File storage connection, multer, SHA-256 utility       | ⏳      |
+| 4   | Sakshi    | File storage connection, multer, SHA-256 utility       | ✅ Done |
 | 5   | Saubhagya | RBAC access middleware (clearance, scope, permissions) | ⏳      |
 | 6   | Sakshi    | Audit hash-chain logic                                 | ⏳      |
 | 7   | Saubhagya | Ed25519 signatures (+ `signatures` table migration)    | ⏳      |
@@ -101,6 +101,27 @@ See [`docs/er-diagram.svg`](docs/er-diagram.svg). The constraints are proven by
 - Rules that need other tables or request context (30-day grant limit, position/department
   organisation consistency, workspace-member scope, and document-type/workspace organisation
   consistency) are enforced in the service layer, not by a column constraint.
+
+### File Storage, Multer & SHA-256 Hashing Utility (Step 4)
+
+Step 4 sets up the physical file storage adapters, the upload middleware and the cryptographic integrity engine:
+
+- **Pluggable Storage Adapters (`src/storage/`):**
+  - `SwiftStorageAdapter`: Connects to OpenStack Swift object storage (TempAuth v1.0, Keystone v3, or direct storage endpoint + token). Automatically provisions private containers, uploads, downloads, checks existence and deletes objects for rollbacks.
+  - `LocalStorageAdapter`: Safe local filesystem storage with directory-traversal protection for development and test execution without cloud dependencies.
+  - `SupabaseStorageAdapter`: Compatible private bucket storage over REST.
+  - `createStorageAdapter`: Factory selector dynamically picking the active adapter from `config.STORAGE_DRIVER`.
+- **Upload Middleware (`src/middlewares/upload.js`):**
+  - Uses `multer.memoryStorage()` so file buffers stay in RAM during API calls, ready for immediate hashing and Swift streaming.
+  - Rejects files larger than `MAX_UPLOAD_MB` with `413 FILE_TOO_LARGE`.
+  - Enforces permitted document MIME types (PDF, Office, OpenDocument, plain text, and image scans) with `415 UNSUPPORTED_TYPE`.
+  - Automatically calculates `req.file.sha256` on the in-memory buffer upon arrival.
+- **Cryptographic Hashing & Integrity (`src/utils/hash.js`):**
+  - `sha256` & `sha256Stream`: Computes exact 64 lower-case hex character fingerprints.
+  - `timingSafeCompare`: Constant-time comparison preventing timing attacks.
+  - `verifyIntegrity`: Returns computed status (`VERIFIED` vs `TAMPERED`).
+  - `buildStoragePath`: Collision-resistant, safe version path generator (`orgs/{orgId}/docs/{docId}/v{versionNo}_{cleanName}`).
+- Proven by `tests/hash.test.js`, `tests/upload.test.js`, and `tests/storage.test.js`.
 
 ## API
 
