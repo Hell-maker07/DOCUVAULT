@@ -25,7 +25,7 @@ Built step by step, alternating between members. Each step is committed as soon 
 | 2   | Sakshi    | Vault SQL schema + immutability triggers               | ✅ Done |
 | 3   | Saubhagya | Registration & login API (JWT, bcrypt)                 | ✅ Done |
 | 4   | Sakshi    | File storage connection, multer, SHA-256 utility       | ✅ Done |
-| 5   | Saubhagya | RBAC access middleware (clearance, scope, permissions) | ⏳      |
+| 5   | Saubhagya | RBAC access middleware (clearance, scope, permissions) | ✅ Done |
 | 6   | Sakshi    | Audit hash-chain logic                                 | ⏳      |
 | 7   | Saubhagya | Ed25519 signatures (+ `signatures` table migration)    | ⏳      |
 | 8   | Sakshi    | Document upload and verified download APIs             | ⏳      |
