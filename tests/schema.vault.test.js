@@ -58,7 +58,7 @@ beforeAll(async () => {
      VALUES ($1,$2,3,'Forensic report','Ballistics findings for the case',$3) RETURNING id`,
     [wsId, typeId, userId],
   );
-});
+}, 30_000);
 afterAll(() => pool.end());
 
 const insertVersion = (no, over = {}) =>

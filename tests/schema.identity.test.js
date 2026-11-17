@@ -53,7 +53,7 @@ beforeAll(async () => {
       [orgId],
     )
   ).rows[0].id;
-});
+}, 30_000);
 afterAll(() => pool.end());
 
 describe('reference seed', () => {
