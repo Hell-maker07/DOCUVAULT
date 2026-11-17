@@ -144,3 +144,286 @@ export async function loadWorkspace(db = getPool(), workspaceId, userId) {
     isMember: Boolean(r.is_member),
   };
 }
+
+/**
+ * Evaluates whether a user may perform an action on a document.
+ * Follows the DocuVault 'deny by default' access policy engine specification (AP-03):
+ *
+ * 1. User must exist and be active.
+ * 2. Document must be in the same organisation as the caller. (Missing/foreign org returns 404).
+ * 3. User's clearance level must be >= document classification. (Insufficient clearance returns 404 + audited).
+ * 4. Caller must be in scope:
+ *    - deptScope === 'ORG'
+ *    - deptScope === 'OWN_DEPT' and document department === user department
+ *    - User is an assigned workspace member
+ *    - User holds an active, unexpired access grant (VIEW permission only)
+ *    (Out-of-scope returns 404 + audited).
+ * 5. Position must hold the required permission (VIEW, EDIT, SIGN, SHARE, etc.).
+ *    (Missing permission returns 403 FORBIDDEN + audited).
+ * 6. For write actions (EDIT): workspace must not be CLOSED or ARCHIVED.
+ *    (Closed workspace returns 409 WORKSPACE_CLOSED + audited).
+ *
+ * @param {import('pg').PoolClient|import('pg').Pool} db
+ * @param {string} userId
+ * @param {string} docId
+ * @param {'VIEW'|'UPLOAD'|'EDIT'|'SIGN'|'SHARE'|'AUDIT'|'MANAGE_ORG'} permission
+ * @returns {Promise<{
+ *   ok: boolean,
+ *   status?: number,
+ *   code?: string,
+ *   message?: string,
+ *   audit?: boolean,
+ *   orgId?: string,
+ *   actorId?: string,
+ *   entityType?: string,
+ *   entityId?: string,
+ *   details?: object,
+ *   user?: object,
+ *   document?: object
+ * }>}
+ */
+export async function decide(db = getPool(), userId, docId, permission) {
+  const u = await loadUser(db, userId);
+  if (!u || !u.isActive) {
+    return {
+      ok: false,
+      status: 401,
+      code: 'UNAUTHENTICATED',
+      message: 'User not found or inactive',
+      audit: false,
+    };
+  }
+
+  const d = await loadDocument(db, docId, userId);
+  // Hide document existence from different organisations or if missing entirely
+  if (!d || d.orgId !== u.orgId) {
+    return {
+      ok: false,
+      status: 404,
+      code: 'NOT_FOUND',
+      message: 'Document not found',
+      audit: false,
+    };
+  }
+
+  // BR-04: Clearance must be at least classification. A grant NEVER overrides clearance.
+  if (u.clearance < d.classification) {
+    return {
+      ok: false,
+      status: 404,
+      code: 'NOT_FOUND',
+      message: 'Document not found',
+      audit: true,
+      orgId: u.orgId,
+      actorId: u.id,
+      entityType: 'DOCUMENT',
+      entityId: docId,
+      details: {
+        reason: 'INSUFFICIENT_CLEARANCE',
+        userClearance: u.clearance,
+        docClassification: d.classification,
+        action: permission,
+      },
+    };
+  }
+
+  // BR-05: Department scope check (ORG, OWN_DEPT, workspace member, or unexpired grant for VIEW)
+  const inScope =
+    u.deptScope === 'ORG' ||
+    (u.deptScope === 'OWN_DEPT' && d.departmentId === u.departmentId) ||
+    d.isMember ||
+    (permission === 'VIEW' && d.hasActiveGrant);
+
+  if (!inScope) {
+    return {
+      ok: false,
+      status: 404,
+      code: 'NOT_FOUND',
+      message: 'Document not found',
+      audit: true,
+      orgId: u.orgId,
+      actorId: u.id,
+      entityType: 'DOCUMENT',
+      entityId: docId,
+      details: {
+        reason: 'OUT_OF_SCOPE',
+        deptScope: u.deptScope,
+        departmentId: d.departmentId,
+        action: permission,
+      },
+    };
+  }
+
+  // Permission check: caller's position must hold the required permission
+  if (!u.permissions.includes(permission)) {
+    return {
+      ok: false,
+      status: 403,
+      code: 'FORBIDDEN',
+      message: 'Forbidden: Insufficient position permission',
+      audit: true,
+      orgId: u.orgId,
+      actorId: u.id,
+      entityType: 'DOCUMENT',
+      entityId: docId,
+      details: {
+        reason: 'MISSING_PERMISSION',
+        requiredPermission: permission,
+        userPermissions: u.permissions,
+      },
+    };
+  }
+
+  // BR-14: Workspace lifecycle status checks
+  if (permission === 'EDIT') {
+    if (d.workspaceStatus === 'CLOSED' || d.workspaceStatus === 'ARCHIVED') {
+      return {
+        ok: false,
+        status: 409,
+        code: 'WORKSPACE_CLOSED',
+        message: `Workspace is ${d.workspaceStatus.toLowerCase()}`,
+        audit: true,
+        orgId: u.orgId,
+        actorId: u.id,
+        entityType: 'DOCUMENT',
+        entityId: docId,
+        details: {
+          reason: 'WORKSPACE_CLOSED',
+          workspaceStatus: d.workspaceStatus,
+          action: permission,
+        },
+      };
+    }
+  }
+
+  return { ok: true, user: u, document: d };
+}
+
+/**
+ * Evaluates whether a user may perform an action on a workspace directly (e.g. UPLOAD a document).
+ *
+ * @param {import('pg').PoolClient|import('pg').Pool} db
+ * @param {string} userId
+ * @param {string} workspaceId
+ * @param {'UPLOAD'|'VIEW'|'EDIT'|'MANAGE_ORG'} permission
+ * @param {object} [options]
+ * @param {number} [options.classification] Intended classification of uploaded document
+ */
+export async function decideWorkspace(
+  db = getPool(),
+  userId,
+  workspaceId,
+  permission,
+  options = {},
+) {
+  const u = await loadUser(db, userId);
+  if (!u || !u.isActive) {
+    return {
+      ok: false,
+      status: 401,
+      code: 'UNAUTHENTICATED',
+      message: 'User not found or inactive',
+      audit: false,
+    };
+  }
+
+  const w = await loadWorkspace(db, workspaceId, userId);
+  if (!w || w.orgId !== u.orgId) {
+    return {
+      ok: false,
+      status: 404,
+      code: 'NOT_FOUND',
+      message: 'Workspace not found',
+      audit: false,
+    };
+  }
+
+  // Scope check for workspace access
+  const inScope =
+    u.deptScope === 'ORG' ||
+    (u.deptScope === 'OWN_DEPT' && w.departmentId === u.departmentId) ||
+    w.isMember;
+
+  if (!inScope) {
+    return {
+      ok: false,
+      status: 404,
+      code: 'NOT_FOUND',
+      message: 'Workspace not found',
+      audit: true,
+      orgId: u.orgId,
+      actorId: u.id,
+      entityType: 'WORKSPACE',
+      entityId: workspaceId,
+      details: {
+        reason: 'OUT_OF_SCOPE',
+        deptScope: u.deptScope,
+        departmentId: w.departmentId,
+        action: permission,
+      },
+    };
+  }
+
+  // Permission check
+  if (!u.permissions.includes(permission)) {
+    return {
+      ok: false,
+      status: 403,
+      code: 'FORBIDDEN',
+      message: 'Forbidden: Insufficient position permission',
+      audit: true,
+      orgId: u.orgId,
+      actorId: u.id,
+      entityType: 'WORKSPACE',
+      entityId: workspaceId,
+      details: {
+        reason: 'MISSING_PERMISSION',
+        requiredPermission: permission,
+      },
+    };
+  }
+
+  // BR-14: Uploads only into OPEN workspaces
+  if (permission === 'UPLOAD') {
+    if (w.status !== 'OPEN') {
+      return {
+        ok: false,
+        status: 409,
+        code: 'WORKSPACE_CLOSED',
+        message: `Workspace is ${w.status.toLowerCase()}`,
+        audit: true,
+        orgId: u.orgId,
+        actorId: u.id,
+        entityType: 'WORKSPACE',
+        entityId: workspaceId,
+        details: {
+          reason: 'WORKSPACE_CLOSED',
+          workspaceStatus: w.status,
+          action: permission,
+        },
+      };
+    }
+
+    // BR-04: An uploader cannot classify above their own clearance
+    if (options.classification && options.classification > u.clearance) {
+      return {
+        ok: false,
+        status: 403,
+        code: 'FORBIDDEN',
+        message: 'Cannot classify document above your own clearance level',
+        audit: true,
+        orgId: u.orgId,
+        actorId: u.id,
+        entityType: 'WORKSPACE',
+        entityId: workspaceId,
+        details: {
+          reason: 'CLASSIFICATION_EXCEEDS_CLEARANCE',
+          userClearance: u.clearance,
+          requestedClassification: options.classification,
+        },
+      };
+    }
+  }
+
+  return { ok: true, user: u, workspace: w };
+}
