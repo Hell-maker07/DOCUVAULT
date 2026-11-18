@@ -10,6 +10,7 @@ import {
   getAuditRowBySeqHandler,
   getDeniedStatsHandler,
   getActiveUsersStatsHandler,
+  verifyAllFilesHandler,
 } from './controller.js';
 
 const router = Router();
@@ -18,6 +19,7 @@ const router = Router();
 router.use(authenticate, requirePermission('AUDIT'));
 
 router.get('/verify-chain', asyncHandler(verifyChainHandler));
+router.post('/verify-all', asyncHandler(verifyAllFilesHandler));
 router.get('/stats/denied-by-position', asyncHandler(getDeniedStatsHandler));
 router.get('/stats/active-users', asyncHandler(getActiveUsersStatsHandler));
 router.get('/:seq(\\d+)', asyncHandler(getAuditRowBySeqHandler));

@@ -75,3 +75,15 @@ export async function getActiveUsersStatsHandler(req, res) {
   const data = await getActiveUsersStats(orgId, days);
   return ok(res, data, 'Most active users (Q08)');
 }
+
+export async function verifyAllFilesHandler(req, res) {
+  const orgId = req.policyUser?.orgId || req.user?.orgId;
+  const actorId = req.user?.id;
+  if (!orgId) {
+    throw new AppError('Organisation context missing', 400, 'VALIDATION_ERROR');
+  }
+
+  const { verifyAllOrganisationFiles } = await import('../documents/service.js');
+  const data = await verifyAllOrganisationFiles(orgId, actorId, req.ip);
+  return ok(res, data, 'Batch file integrity verification complete');
+}
