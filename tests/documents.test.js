@@ -611,6 +611,17 @@ describe('Step 8: Document Intake, Versioning & Verified Download (Sakshi)', () 
       expect(audit.details.status).toBe('TAMPERED');
       expect(audit.details.expected).toBe(v1Hash);
 
+      // POST /documents/:id/verify reports the tampered version (AP-07 acceptance test)
+      const tamperVerifyRes = await request(app)
+        .post(`/api/v1/documents/${verifyDocId}/verify`)
+        .set('Authorization', `Bearer ${userCl4AToken}`);
+
+      expect(tamperVerifyRes.status).toBe(200);
+      expect(tamperVerifyRes.body.success).toBe(true);
+      expect(tamperVerifyRes.body.data.allVerified).toBe(false);
+      expect(tamperVerifyRes.body.data.versions[0].status).toBe('TAMPERED');
+      expect(tamperVerifyRes.body.data.versions[0].verified).toBe(false);
+
       // Restore original file
       await storage.put(v1StoragePath, Buffer.from(v1Text), 'text/plain');
     });
