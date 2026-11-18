@@ -28,7 +28,7 @@ Built step by step, alternating between members. Each step is committed as soon 
 | 5   | Saubhagya | RBAC access middleware (clearance, scope, permissions) | ✅ Done |
 | 6   | Sakshi    | Audit hash-chain logic                                 | ✅ Done |
 | 7   | Saubhagya | Ed25519 signatures (+ `signatures` table migration)    | ✅ Done |
-| 8   | Sakshi    | Document upload and verified download APIs             | ⏳      |
+| 8   | Sakshi    | Document upload and verified download APIs             | ✅ Done |
 | 9   | Saubhagya | React frontend: Auth UI + Admin dashboard              | ⏳      |
 | 10  | Sakshi    | React Vault UI, upload form, audit viewer              | ⏳      |
 
@@ -170,25 +170,73 @@ Step 7 implements digital signature creation, verification, and database immutab
   - `GET /api/v1/signatures/:id/verify`: Standalone signature verification by ID.
 - Proven by comprehensive acceptance tests in `tests/signatures.test.js` (18 tests covering keypairs, immutability, anti-tampering, duplicate rejection, and RBAC).
 
+### Document Intake, Versioning & Verified Download Architecture (Step 8)
+
+Step 8 implements physical file storage intake, versioning, full-text access search, and cryptographic integrity verification (AP-04, AP-05, AP-06, AP-07, AP-09, DE-05):
+
+- **Workspace Lifecycle & Membership (`src/modules/workspaces/`):**
+  - Workspaces define collaborative containers for documents within departments.
+  - Creator or `MANAGE_ORG` can manage members and update lifecycle status (`OPEN`, `CLOSED`, `ARCHIVED`).
+  - Terminal status rule (BR-14): Once `ARCHIVED`, a workspace cannot be reopened to `OPEN` or `CLOSED` (`409 CONFLICT`).
+  - Writes are strictly disallowed into non-open workspaces (`409 WORKSPACE_CLOSED`).
+- **Initial Document Upload (`POST /api/v1/workspaces/:id/documents`):**
+  - Single-part file upload handled in-memory via Multer with `MAX_UPLOAD_MB` and MIME type validation.
+  - Cryptographic fingerprinting: Computes `sha256` of file bytes upon intake.
+  - Generates safe, collision-resistant storage path: `orgs/{orgId}/docs/{docId}/v1_{cleanName}`.
+  - Atomically inserts `documents` identity and `document_versions` (v1) rows in a database transaction with audit logging.
+  - Rollback safety: Deletes file from object storage if any database constraint or write fails.
+  - Enforces classification limit (BR-04): Uploader cannot classify above their own clearance (`403 FORBIDDEN`).
+- **Concurrency-Safe Versioning (`POST /api/v1/documents/:id/versions`):**
+  - Locks document row (`SELECT id, workspace_id FROM documents WHERE id = $1 FOR UPDATE`) inside caller's transaction to prevent race conditions during version incrementing.
+  - Determines next version number (`COALESCE(MAX(version_no), 0) + 1`), saves file to storage, and writes immutable version record.
+  - Proven by concurrent tests with 10 simultaneous uploads executing in parallel without duplicate version numbers or gaps.
+- **Verified Download & Integrity Checks (`GET /api/v1/documents/:id/versions/:no/download`):**
+  - Fetches file bytes from storage and cryptographically re-hashes before streaming.
+  - If bytes match `version.sha256`: Sets `X-DocuVault-Integrity: VERIFIED` headers, logs `DOWNLOAD` audit event, and streams file.
+  - If bytes mismatch (tampered): Refuses transfer, returns `409 INTEGRITY_FAILURE`, and logs `VERIFY FAILED` (`status: 'TAMPERED'`) to the audit trail.
+  - `POST /api/v1/documents/:id/verify`: Re-hashes every version of a document against storage.
+  - `POST /api/v1/audit/verify-all`: Scans and re-hashes every document version in the organisation (request 25).
+- **Access-Filtered Full-Text Search (`GET /api/v1/documents`):**
+  - Combines PostgreSQL GIN indexed `search_vec @@ plainto_tsquery(...)` with the RBAC clearance and scope predicate (`buildAccessFilter`).
+  - Lower-clearance users receive fewer results; out-of-scope or foreign organisation documents are never revealed.
+- **DE-05 Analytics Endpoints:**
+  - `GET /api/v1/documents/stats/dept-classification`: Documents per department per classification (Q01).
+  - `GET /api/v1/documents/stats/multi-versions`: Documents with multiple versions (Q05).
+  - `GET /api/v1/documents/stats/ranked-positions`: Positions ranked by documents opened (Q12).
+- Proven by comprehensive acceptance tests in `tests/documents.test.js` (26 tests covering upload, versioning, concurrency, download verification, tamper detection, search, and analytics).
+
 ## API
 
 Base path `/api/v1`. All responses use `{ success, message, data }` or
 `{ success: false, error: { code, message, details } }`.
 
-| Endpoint                                 | Method  | Access    | Status  | Description                                             |
-| ---------------------------------------- | ------- | --------- | ------- | ------------------------------------------------------- |
-| `/health`                                | GET     | Public    | ✅ Live | Liveness probe; does not touch database                 |
-| `/orgs`                                  | POST    | Public    | ✅ Live | Bootstrap organisation with root admin + JWT (AP-01)    |
-| `/auth/login`                            | POST    | Public    | ✅ Live | Credential verification and JWT token issuance (AP-01)  |
-| `/auth/me`                               | GET     | Signed in | ✅ Live | Current user, clearance, position & permissions (AP-01) |
-| `/audit`                                 | GET     | AUDIT     | ✅ Live | Filtered & paginated audit log entries (AP-08)          |
-| `/audit/verify-chain`                    | GET     | AUDIT     | ✅ Live | Cryptographic chain recomputation & break detection     |
-| `/audit/:seq`                            | GET     | AUDIT     | ✅ Live | Individual audit entry by sequence number               |
-| `/documents/:id/versions/:no/sign`       | POST    | SIGN      | ✅ Live | Signs document version with Ed25519 signature (AP-10)   |
-| `/documents/:id/versions/:no/signatures` | GET     | VIEW      | ✅ Live | Verifies each signature on document version (AP-10)     |
-| `/signatures/stats/unsigned-latest`      | GET     | Signed in | ✅ Live | Latest document versions without signatures (DE-05 Q06) |
-| `/signatures/:id/verify`                 | GET     | Signed in | ✅ Live | Cryptographic verification of single signature by ID    |
-| 14 other endpoints                       | Various | Various   | Planned | Planned in later steps (see master design)              |
+| Endpoint                                 | Method | Access     | Status  | Description                                                  |
+| ---------------------------------------- | ------ | ---------- | ------- | ------------------------------------------------------------ |
+| `/health`                                | GET    | Public     | ✅ Live | Liveness probe; does not touch database                      |
+| `/orgs`                                  | POST   | Public     | ✅ Live | Bootstrap organisation with root admin + JWT (AP-01)         |
+| `/auth/login`                            | POST   | Public     | ✅ Live | Credential verification and JWT token issuance (AP-01)       |
+| `/auth/me`                               | GET    | Signed in  | ✅ Live | Current user, clearance, position & permissions (AP-01)      |
+| `/workspaces`                            | POST   | UPLOAD     | ✅ Live | Creates a workspace in a department (AP-04)                  |
+| `/workspaces`                            | GET    | Signed in  | ✅ Live | Lists reachable workspaces within caller scope (AP-04)       |
+| `/workspaces/:id`                        | GET    | Signed in  | ✅ Live | Workspace details and member list (AP-04)                    |
+| `/workspaces/:id/status`                 | PATCH  | Admin      | ✅ Live | Updates workspace status (OPEN, CLOSED, ARCHIVED) (BR-14)    |
+| `/workspaces/:id/members`                | POST   | Admin      | ✅ Live | Assigns user as member to workspace (AP-04)                  |
+| `/workspaces/:id/documents`              | POST   | UPLOAD     | ✅ Live | Uploads initial document v1 with SHA-256 fingerprint (AP-05) |
+| `/documents`                             | GET    | VIEW       | ✅ Live | Access-filtered full-text search and listing (AP-09)         |
+| `/documents/:id`                         | GET    | VIEW       | ✅ Live | Document metadata, versions, and digital signatures (AP-09)  |
+| `/documents/:id/versions`                | POST   | EDIT       | ✅ Live | Concurrency-safe new version upload (AP-06)                  |
+| `/documents/:id/versions/:no/download`   | GET    | VIEW       | ✅ Live | Integrity-checked streaming download (AP-07)                 |
+| `/documents/:id/verify`                  | POST   | VIEW       | ✅ Live | Re-hashes all versions of document (AP-07)                   |
+| `/documents/:id/versions/:no/sign`       | POST   | SIGN       | ✅ Live | Signs document version with Ed25519 signature (AP-10)        |
+| `/documents/:id/versions/:no/signatures` | GET    | VIEW       | ✅ Live | Verifies each signature on document version (AP-10)          |
+| `/document-types`                        | GET    | Signed in  | ✅ Live | Lists document types for organisation                        |
+| `/document-types`                        | POST   | MANAGE_ORG | ✅ Live | Creates document type for organisation                       |
+| `/audit`                                 | GET    | AUDIT      | ✅ Live | Filtered & paginated audit log entries (AP-08)               |
+| `/audit/verify-chain`                    | GET    | AUDIT      | ✅ Live | Cryptographic chain recomputation & break detection          |
+| `/audit/:seq`                            | GET    | AUDIT      | ✅ Live | Individual audit entry by sequence number                    |
+| `/audit/verify-all`                      | POST   | AUDIT      | ✅ Live | Re-hashes every file in organisation (AP-07)                 |
+| `/signatures/stats/unsigned-latest`      | GET    | Signed in  | ✅ Live | Latest document versions without signatures (DE-05 Q06)      |
+| `/signatures/:id/verify`                 | GET    | Signed in  | ✅ Live | Cryptographic verification of single signature by ID         |
 
 ## Security principles
 
