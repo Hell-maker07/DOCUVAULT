@@ -269,7 +269,7 @@ Step 9 implements the web client infrastructure, tenant onboarding, authenticati
 - **Temporary Home Page & Vault Navigation (`public/home.html`):**
   - Polished, responsive landing page served directly at `/home` and `/vault`.
   - Dynamic user profile greeting and organisation metadata resolved from `GET /api/v1/auth/me`.
-  - Displays preparation notice: *"Your Vault workspace is being prepared. Document management features will be available soon."*
+  - Displays preparation notice: _"Your Vault workspace is being prepared. Document management features will be available soon."_
   - Dedicated "Organisation Administration" access button dynamically revealed strictly to users with `MANAGE_ORG` permission (hidden for regular employees).
   - Normal login navigation routes all standard employee and administrator logins to `/home.html`.
   - Preserves clean modular boundaries for Sakshi's upcoming Step 10 Vault UI (zero document uploads, mock lists, or audit viewers introduced).
