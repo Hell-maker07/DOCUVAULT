@@ -29,7 +29,7 @@ Built step by step, alternating between members. Each step is committed as soon 
 | 6   | Sakshi     | Audit hash-chain logic                                 | ✅ Done    |
 | 7   | Saubhagya  | Ed25519 signatures (+ `signatures` table migration)    | ✅ Done    |
 | 8   | Sakshi     | Document upload and verified download APIs             | ✅ Done    |
-| 9   | Saubhagya  | React frontend: Auth UI + Admin dashboard              | ⏳         |
+| 9   | Saubhagya  | React frontend: Auth UI + Admin dashboard              | ✅ Done    |
 | 10  | Sakshi     | React Vault UI, upload form, audit viewer              | ⏳         |
 | 11  | Unassigned | Platform Super Admin Dashboard                         | 📋 Planned |
 
@@ -208,6 +208,76 @@ Step 8 implements physical file storage intake, versioning, full-text access sea
   - `GET /api/v1/documents/stats/ranked-positions`: Positions ranked by documents opened (Q12).
 - Proven by comprehensive acceptance tests in `tests/documents.test.js` (26 tests covering upload, versioning, concurrency, download verification, tamper detection, search, and analytics).
 
+### Frontend Auth UI, Organisation Admin Dashboard & Vault Navigation (Step 9)
+
+Step 9 implements the web client infrastructure, tenant onboarding, authentication interfaces, the full Organisation Admin Dashboard, and bidirectional Vault navigation with RBAC enforcement:
+
+- **Web Client Pipeline & Hardened Security (`public/`):**
+  - Static asset serving mounted via Express with custom Content Security Policy (CSP) directives permitting Tailwind CSS CDN, Google Fonts (`fonts.googleapis.com`, `fonts.gstatic.com`), and embedded webview runners.
+  - Reusable toast notification module (`public/toast.js`) providing non-blocking visual feedback for asynchronous operations.
+- **Tenant Onboarding & Authentication UI (`public/login.html`, `public/register.html`, `public/index.html`):**
+  - Official brand palette styling: **Soft Fawn** (`#B59778`), **Space Indigo** (`#1E2952`), and **Dusk Blue** (`#2E5090`).
+  - Streamlined login interface with client-side format validation, loading spinner states, credential submission against `POST /api/v1/auth/login`, and session JWT storage.
+  - Multi-step organisation registration with instant bootstrap via `POST /api/v1/orgs`, immediately redirecting initial administrators directly to the Organisation Admin Dashboard (`/dashboard`).
+  - Session dispatch gateway in `index.html` routing authenticated users to `/home.html` and unauthenticated sessions to `/login.html`.
+- **Organisation Admin Backend APIs (`src/modules/`):**
+  - Department hierarchy and dictionary endpoints (`/api/v1/departments`) with unique code constraints and member protection.
+  - Position management (`/api/v1/positions`) linking clearance levels (1–4), departmental scopes, and permission sets.
+  - User and employee administration (`/api/v1/users`) supporting secure password hashing, department/position foreign-key validation, and granular permission editing (`VIEW`, `UPLOAD`, `EDIT`, `SIGN`, `SHARE`, `AUDIT`, `MANAGE_ORG`).
+  - Transactional persistence in Neon PostgreSQL ensuring all employee modifications persist reliably across restarts and page reloads.
+- **Organisation Admin Dashboard UI (`public/dashboard.html`):**
+  - Live metric summary cards: Total Departments, Positions, and Active Members.
+  - Searchable and filterable data tables for departments, positions, and organisation members.
+  - Modal workflows: Create Department, Configure Position & Clearance, Add Member, Edit Member Permissions, and Member Deactivation with audit logging.
+  - Navigation options: "Take Me to Vault" sidebar button (`id="nav-btn-vault"`) and user profile dropdown link (`id="dropdown-vault-link"`).
+  - RBAC protection: Automatically redirects users lacking the `MANAGE_ORG` permission to `/home.html`.
+- **Temporary Home Page & Vault Navigation (`public/home.html`):**
+  - Polished, responsive landing page served directly at `/home` and `/vault`.
+  - Dynamic user profile greeting and organisation metadata resolved from `GET /api/v1/auth/me`.
+  - Displays preparation notice: _"Your Vault workspace is being prepared. Document management features will be available soon."_
+  - Dedicated "Organisation Administration" access button dynamically revealed strictly to users with `MANAGE_ORG` permission (hidden for regular employees).
+  - Normal login navigation routes all standard employee and administrator logins to `/home.html`.
+  - Preserves clean modular boundaries for Sakshi's upcoming Step 10 Vault UI (zero document uploads, mock lists, or audit viewers introduced).
+- Proven by comprehensive acceptance tests across 3 suites (48 tests total):
+  - `tests/auth.ui.test.js`: 21 tests validating static routing, registration/login forms, CSP headers, and dashboard modal elements.
+  - `tests/users.persistence.test.js`: 16 tests verifying Neon PostgreSQL database persistence, employee creation, permission updates, department cascades, and multi-tenant isolation.
+  - `tests/vault.nav.test.js`: 11 tests verifying all 9 Step 9 navigation and RBAC flows.
+
+### Frontend Auth UI, Organisation Admin Dashboard & Vault Navigation (Step 9)
+
+Step 9 implements the web client infrastructure, tenant onboarding, authentication interfaces, the full Organisation Admin Dashboard, and bidirectional Vault navigation with RBAC enforcement:
+
+- **Web Client Pipeline & Hardened Security (`public/`):**
+  - Static asset serving mounted via Express with custom Content Security Policy (CSP) directives permitting Tailwind CSS CDN, Google Fonts (`fonts.googleapis.com`, `fonts.gstatic.com`), and embedded webview runners.
+  - Reusable toast notification module (`public/toast.js`) providing non-blocking visual feedback for asynchronous operations.
+- **Tenant Onboarding & Authentication UI (`public/login.html`, `public/register.html`, `public/index.html`):**
+  - Official brand palette styling: **Soft Fawn** (`#B59778`), **Space Indigo** (`#1E2952`), and **Dusk Blue** (`#2E5090`).
+  - Streamlined login interface with client-side format validation, loading spinner states, credential submission against `POST /api/v1/auth/login`, and session JWT storage.
+  - Multi-step organisation registration with instant bootstrap via `POST /api/v1/orgs`, immediately redirecting initial administrators directly to the Organisation Admin Dashboard (`/dashboard`).
+  - Session dispatch gateway in `index.html` routing authenticated users to `/home.html` and unauthenticated sessions to `/login.html`.
+- **Organisation Admin Backend APIs (`src/modules/`):**
+  - Department hierarchy and dictionary endpoints (`/api/v1/departments`) with unique code constraints and member protection.
+  - Position management (`/api/v1/positions`) linking clearance levels (1–4), departmental scopes, and permission sets.
+  - User and employee administration (`/api/v1/users`) supporting secure password hashing, department/position foreign-key validation, and granular permission editing (`VIEW`, `UPLOAD`, `EDIT`, `SIGN`, `SHARE`, `AUDIT`, `MANAGE_ORG`).
+  - Transactional persistence in Neon PostgreSQL ensuring all employee modifications persist reliably across restarts and page reloads.
+- **Organisation Admin Dashboard UI (`public/dashboard.html`):**
+  - Live metric summary cards: Total Departments, Positions, and Active Members.
+  - Searchable and filterable data tables for departments, positions, and organisation members.
+  - Modal workflows: Create Department, Configure Position & Clearance, Add Member, Edit Member Permissions, and Member Deactivation with audit logging.
+  - Navigation options: "Take Me to Vault" sidebar button (`id="nav-btn-vault"`) and user profile dropdown link (`id="dropdown-vault-link"`).
+  - RBAC protection: Automatically redirects users lacking the `MANAGE_ORG` permission to `/home.html`.
+- **Temporary Home Page & Vault Navigation (`public/home.html`):**
+  - Polished, responsive landing page served directly at `/home` and `/vault`.
+  - Dynamic user profile greeting and organisation metadata resolved from `GET /api/v1/auth/me`.
+  - Displays preparation notice: *"Your Vault workspace is being prepared. Document management features will be available soon."*
+  - Dedicated "Organisation Administration" access button dynamically revealed strictly to users with `MANAGE_ORG` permission (hidden for regular employees).
+  - Normal login navigation routes all standard employee and administrator logins to `/home.html`.
+  - Preserves clean modular boundaries for Sakshi's upcoming Step 10 Vault UI (zero document uploads, mock lists, or audit viewers introduced).
+- Proven by comprehensive acceptance tests across 3 suites (48 tests total):
+  - `tests/auth.ui.test.js`: 21 tests validating static routing, registration/login forms, CSP headers, and dashboard modal elements.
+  - `tests/users.persistence.test.js`: 16 tests verifying Neon PostgreSQL database persistence, employee creation, permission updates, department cascades, and multi-tenant isolation.
+  - `tests/vault.nav.test.js`: 11 tests verifying all 9 Step 9 navigation and RBAC flows.
+
 ### Platform Super Admin Dashboard (Step 11 — Planned Phase)
 
 > **Status:** 📋 Planned (Standalone phase scheduled after Steps 9 and 10)  
@@ -241,6 +311,16 @@ Base path `/api/v1`. All responses use `{ success, message, data }` or
 | `/orgs`                                  | POST   | Public     | ✅ Live | Bootstrap organisation with root admin + JWT (AP-01)         |
 | `/auth/login`                            | POST   | Public     | ✅ Live | Credential verification and JWT token issuance (AP-01)       |
 | `/auth/me`                               | GET    | Signed in  | ✅ Live | Current user, clearance, position & permissions (AP-01)      |
+| `/departments`                           | GET    | Signed in  | ✅ Live | Lists departments for organisation                           |
+| `/departments`                           | POST   | MANAGE_ORG | ✅ Live | Creates departmental unit with unique code                   |
+| `/departments/:id`                       | DELETE | MANAGE_ORG | ✅ Live | Deletes empty department (protected against active members)  |
+| `/positions`                             | GET    | Signed in  | ✅ Live | Lists positions with clearance levels and scopes             |
+| `/positions`                             | POST   | MANAGE_ORG | ✅ Live | Creates position with clearance and permission templates     |
+| `/positions/:id`                         | DELETE | MANAGE_ORG | ✅ Live | Deletes position without assigned members                    |
+| `/users`                                 | GET    | Signed in  | ✅ Live | Lists organisation employees with clearance and positions    |
+| `/users`                                 | POST   | MANAGE_ORG | ✅ Live | Creates new employee with hashed password and permissions    |
+| `/users/:id`                             | PUT    | MANAGE_ORG | ✅ Live | Updates employee attributes and granular permissions         |
+| `/users/:id`                             | DELETE | MANAGE_ORG | ✅ Live | Deactivates employee and revokes active access               |
 | `/workspaces`                            | POST   | UPLOAD     | ✅ Live | Creates a workspace in a department (AP-04)                  |
 | `/workspaces`                            | GET    | Signed in  | ✅ Live | Lists reachable workspaces within caller scope (AP-04)       |
 | `/workspaces/:id`                        | GET    | Signed in  | ✅ Live | Workspace details and member list (AP-04)                    |
