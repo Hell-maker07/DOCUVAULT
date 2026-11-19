@@ -1,0 +1,3505 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="web_standard" name="shell-type" />
+    <title>DOCUVAULT - Organisation Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --color-fawn: #b59778;
+        --color-indigo: #1e2952;
+        --color-dusk: #2e5090;
+        --color-surface: #faf8f5;
+        --color-border: #e4d9cf;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--color-surface);
+        font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        color: var(--color-indigo);
+        -webkit-font-smoothing: antialiased;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f5f1eb;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #e4d9cf;
+        border-radius: 9999px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #b59778;
+      }
+      .hidden {
+        display: none !important;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .modal-backdrop {
+        background: rgba(30, 41, 82, 0.45);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+      .input-error {
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+      }
+      .nav-active {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border-left: 3px solid #b59778 !important;
+      }
+      .nav-active .material-symbols-outlined {
+        color: #b59778 !important;
+      }
+    </style>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              fawn: '#B59778', // Soft Fawn (Primary buttons, selected actions, highlights)
+              'fawn-hover': '#A28364',
+              'fawn-light': '#E4D9CF', // Warm borders
+              'fawn-subtle': '#F5F1EB', // Light neutral surface
+              'fawn-surface': '#FAF8F5', // Main warm background
+              'space-indigo': '#1E2952', // Space Indigo (Sidebar, headings, structure)
+              'space-indigo-hover': '#2B3B6F',
+              'dusk-blue': '#2E5090', // Dusk Blue (Accents, icons, metadata)
+              'dusk-blue-light': '#EFF4FA', // Soft blue surface
+              'warm-border': '#E4D9CF', // Subtle warm borders
+              'text-main': '#1E2952',
+              'text-muted': '#68615A',
+              'surface-card': '#FFFFFF',
+            },
+            fontFamily: {
+              sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+              inter: ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="bg-fawn-surface font-sans text-space-indigo antialiased min-h-screen flex flex-col selection:bg-fawn/20 selection:text-space-indigo"
+  >
+    <!-- ==================== MAIN APPLICATION CONTAINER ==================== -->
+    <div class="flex-1 flex overflow-hidden h-screen bg-fawn-surface">
+      <!-- ==================== LEFT SIDEBAR ==================== -->
+      <aside
+        id="sidebar"
+        class="bg-space-indigo text-white flex flex-col justify-between transition-all duration-300 z-40 fixed inset-y-0 left-0 md:static w-64 md:translate-x-0 -translate-x-full shadow-xl md:shadow-none"
+      >
+        <!-- Top Branding & Navigation -->
+        <div class="flex flex-col flex-1 overflow-y-auto custom-scrollbar">
+          <!-- Logo Header -->
+          <div
+            class="h-16 flex items-center justify-between px-5 border-b border-white/10 shrink-0"
+          >
+            <a href="/dashboard" class="flex items-center gap-2.5 group">
+              <div
+                class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-fawn group-hover:bg-white/15 transition-colors"
+              >
+                <span class="material-symbols-outlined text-[20px] text-fawn"
+                  >folder_supervised</span
+                >
+              </div>
+              <div class="flex flex-col">
+                <span class="font-bold tracking-tight text-base text-white leading-tight"
+                  >DOCUVAULT</span
+                >
+                <span
+                  class="text-[9px] font-semibold tracking-wider text-fawn uppercase leading-none"
+                  >Admin Enclave</span
+                >
+              </div>
+            </a>
+            <button
+              id="close-mobile-sidebar-btn"
+              type="button"
+              class="md:hidden text-white/70 hover:text-white p-1 rounded-md focus:outline-none cursor-pointer"
+              aria-label="Close menu"
+            >
+              <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+
+          <!-- Organisation Switcher / Label -->
+          <div class="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col min-w-0">
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-white/50"
+                  >Organisation</span
+                >
+                <span id="sidebar-org-name" class="text-xs font-bold text-white truncate"
+                  >Acme Corporation</span
+                >
+              </div>
+              <span class="flex h-2 w-2 relative">
+                <span
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+                ></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Navigation Menu -->
+          <nav class="p-3 space-y-1" aria-label="Sidebar navigation">
+            <!-- Overview Tab -->
+            <button
+              type="button"
+              id="nav-btn-overview"
+              data-action="switch-tab"
+              data-tab="overview"
+              onclick="switchTab('overview')"
+              class="nav-item nav-active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 text-white bg-white/10 border-l-2 border-fawn cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[18px] text-fawn">dashboard</span>
+              <span>Overview</span>
+            </button>
+
+            <!-- Departments Tab -->
+            <button
+              type="button"
+              id="nav-btn-departments"
+              data-action="switch-tab"
+              data-tab="departments"
+              onclick="switchTab('departments')"
+              class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 text-white/70 hover:text-white hover:bg-white/5 cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[18px] text-white/50"
+                >corporate_fare</span
+              >
+              <span>Departments</span>
+              <span
+                id="nav-badge-departments"
+                class="ml-auto px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white/10 text-white/80"
+                >3</span
+              >
+            </button>
+
+            <!-- Positions & Permissions Tab -->
+            <button
+              type="button"
+              id="nav-btn-positions"
+              data-action="switch-tab"
+              data-tab="positions"
+              onclick="switchTab('positions')"
+              class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 text-white/70 hover:text-white hover:bg-white/5 cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[18px] text-white/50">badge</span>
+              <span>Positions & Permissions</span>
+              <span
+                id="nav-badge-positions"
+                class="ml-auto px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white/10 text-white/80"
+                >4</span
+              >
+            </button>
+
+            <!-- Users Tab -->
+            <button
+              type="button"
+              id="nav-btn-users"
+              data-action="switch-tab"
+              data-tab="users"
+              onclick="switchTab('users')"
+              class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 text-white/70 hover:text-white hover:bg-white/5 cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[18px] text-white/50">group</span>
+              <span>Users</span>
+              <span
+                id="nav-badge-users"
+                class="ml-auto px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white/10 text-white/80"
+                >5</span
+              >
+            </button>
+
+            <!-- Organisation Settings Tab -->
+            <button
+              type="button"
+              id="nav-btn-settings"
+              data-action="switch-tab"
+              data-tab="settings"
+              onclick="switchTab('settings')"
+              class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 text-white/70 hover:text-white hover:bg-white/5 cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[18px] text-white/50">settings</span>
+              <span>Organisation Settings</span>
+            </button>
+
+            <!-- Take Me to Vault Navigation Option -->
+            <div class="pt-2 mt-2 border-t border-white/10">
+              <a
+                href="/home.html"
+                id="nav-btn-vault"
+                class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-fawn hover:text-white hover:bg-white/10 transition-all duration-150 border border-fawn/30 hover:border-fawn cursor-pointer group"
+                title="Navigate to Document Vault Workspace"
+              >
+                <span
+                  class="material-symbols-outlined text-[18px] text-fawn group-hover:scale-110 transition-transform"
+                  >lock_open</span
+                >
+                <span>Take Me to Vault</span>
+                <span
+                  class="material-symbols-outlined text-[14px] ml-auto text-white/50 group-hover:text-white transition-colors"
+                  >arrow_forward</span
+                >
+              </a>
+            </div>
+          </nav>
+        </div>
+
+        <!-- Bottom Profile & Logout -->
+        <div class="p-3 border-t border-white/10 bg-white/[0.02]">
+          <div
+            id="sidebar-profile-card"
+            data-action="switch-tab"
+            data-tab="settings"
+            onclick="switchTab('settings')"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 border border-white/5 mb-2 cursor-pointer hover:bg-white/10 transition-colors group"
+            title="Organisation Settings"
+          >
+            <div
+              id="admin-avatar-pill"
+              class="w-8 h-8 rounded-full bg-fawn flex items-center justify-center text-xs font-bold text-white shrink-0"
+            >
+              AD
+            </div>
+            <div class="flex flex-col min-w-0 flex-1">
+              <span id="admin-name-display" class="text-xs font-semibold text-white truncate"
+                >Administrator</span
+              >
+              <span id="admin-email-display" class="text-[10px] text-white/60 truncate"
+                >admin@org.com</span
+              >
+            </div>
+          </div>
+
+          <button
+            type="button"
+            id="sidebar-signout-btn"
+            data-action="logout"
+            onclick="handleLogout()"
+            class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-red-300 hover:text-red-200 hover:bg-red-950/30 rounded-lg transition-colors border border-transparent hover:border-red-800/30 cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-[16px]">logout</span>
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Mobile Overlay Backdrop -->
+      <div
+        id="mobile-backdrop"
+        style="display: none"
+        class="fixed inset-0 bg-space-indigo/50 backdrop-blur-sm z-30 md:hidden"
+      ></div>
+
+      <!-- ==================== MAIN CONTENT AREA ==================== -->
+      <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-fawn-surface">
+        <!-- Top Navigation Bar -->
+        <header
+          class="h-16 bg-white border-b border-warm-border px-4 sm:px-6 lg:px-8 flex items-center justify-between shrink-0 z-10 shadow-[0_1px_4px_rgba(30,41,82,0.02)]"
+        >
+          <!-- Left: Mobile Toggle & Breadcrumb -->
+          <div class="flex items-center gap-3">
+            <button
+              id="open-mobile-sidebar-btn"
+              type="button"
+              class="md:hidden p-1.5 rounded-lg text-text-muted hover:text-space-indigo hover:bg-fawn-subtle focus:outline-none cursor-pointer"
+              aria-label="Open sidebar"
+            >
+              <span class="material-symbols-outlined text-[22px]">menu</span>
+            </button>
+            <div class="flex items-center gap-2 text-xs font-medium">
+              <span class="text-text-muted">Organisation</span>
+              <span class="text-warm-border">/</span>
+              <span id="topbar-breadcrumb-section" class="text-space-indigo font-semibold"
+                >Overview</span
+              >
+            </div>
+          </div>
+
+          <!-- Right: Enclave Badge & Quick Profile Dropdown -->
+          <div class="flex items-center gap-3 sm:gap-4">
+            <!-- Enclave Status Tag -->
+            <div
+              class="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fawn-surface border border-warm-border text-xs"
+            >
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="font-medium text-space-indigo text-[11px]">Enclave Verified</span>
+            </div>
+
+            <!-- Quick Actions Shortcut Pill / Dropdown -->
+            <div class="relative">
+              <button
+                id="admin-user-menu-btn"
+                onclick="toggleUserDropdown(event)"
+                type="button"
+                class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-fawn-subtle transition-colors focus:outline-none cursor-pointer"
+              >
+                <div
+                  id="topbar-avatar"
+                  class="w-7 h-7 rounded-full bg-space-indigo flex items-center justify-center text-[11px] font-bold text-fawn"
+                >
+                  AD
+                </div>
+                <span
+                  id="topbar-admin-name"
+                  class="hidden sm:inline text-xs font-semibold text-space-indigo max-w-[130px] truncate"
+                  >Administrator</span
+                >
+                <span class="material-symbols-outlined text-[16px] text-text-muted"
+                  >expand_more</span
+                >
+              </button>
+
+              <!-- Dropdown Menu -->
+              <div
+                id="user-dropdown-menu"
+                style="display: none"
+                class="absolute right-0 mt-2 w-56 rounded-xl bg-white border border-warm-border shadow-lg p-2 z-50 text-xs"
+              >
+                <div class="px-3 py-2 border-b border-warm-border/60 mb-1">
+                  <p id="dropdown-admin-name" class="font-bold text-space-indigo truncate">
+                    Elena Vance
+                  </p>
+                  <p id="dropdown-admin-email" class="text-[11px] text-text-muted truncate">
+                    elena.vance@acme.com
+                  </p>
+                  <span
+                    class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold bg-fawn/20 text-space-indigo uppercase tracking-wider mt-1"
+                    >Tenant Administrator</span
+                  >
+                </div>
+                <button
+                  type="button"
+                  data-action="switch-tab"
+                  data-tab="settings"
+                  onclick="
+                    switchTab('settings');
+                    toggleUserDropdown(event);
+                  "
+                  class="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-fawn-subtle text-text-muted hover:text-space-indigo text-left cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-[16px] text-dusk-blue">settings</span>
+                  <span>Organisation Settings</span>
+                </button>
+                <a
+                  href="/home.html"
+                  id="dropdown-vault-link"
+                  class="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-fawn-subtle text-space-indigo font-medium text-left cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-[16px] text-fawn">lock_open</span>
+                  <span>Take Me to Vault</span>
+                </a>
+                <button
+                  type="button"
+                  data-action="logout"
+                  onclick="handleLogout()"
+                  class="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-red-50 text-red-600 text-left mt-1 cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-[16px]">logout</span>
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Scrollable Tab Content Container -->
+        <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-8">
+          <div class="max-w-7xl mx-auto space-y-6">
+            <!-- ==================== TAB 1: OVERVIEW ==================== -->
+            <section id="tab-overview" class="tab-pane space-y-6">
+              <!-- Header Banner -->
+              <div
+                class="rounded-2xl bg-white border border-warm-border p-6 sm:p-8 shadow-sm relative overflow-hidden"
+              >
+                <div class="max-w-2xl relative z-10">
+                  <div
+                    class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-fawn-subtle border border-warm-border text-[11px] font-semibold text-space-indigo uppercase tracking-wider mb-3"
+                  >
+                    <span class="w-2 h-2 rounded-full bg-fawn"></span>
+                    <span>Administration Hub</span>
+                  </div>
+                  <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-space-indigo">
+                    Welcome to your Organisation Dashboard
+                  </h1>
+                  <p class="text-sm text-text-muted mt-2 leading-relaxed">
+                    Manage your organisation's structure, functional departments, role clearances
+                    and enrolled member credentials within your secure digital locker enclave.
+                  </p>
+                </div>
+                <!-- Subtle watermark -->
+                <div
+                  class="absolute -right-8 -bottom-8 w-48 h-48 rounded-full bg-fawn/10 pointer-events-none blur-xl"
+                ></div>
+              </div>
+
+              <!-- 3 Summary Metric Cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <!-- Card 1: Total Departments -->
+                <div
+                  data-action="switch-tab"
+                  data-tab="departments"
+                  onclick="switchTab('departments')"
+                  class="rounded-2xl bg-white border border-warm-border p-5 shadow-xs flex items-center gap-4 transition-all hover:border-fawn/60 cursor-pointer group"
+                >
+                  <div
+                    class="w-12 h-12 rounded-xl bg-space-indigo/5 border border-warm-border flex items-center justify-center text-space-indigo shrink-0 group-hover:bg-fawn/20 transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-[24px] text-fawn"
+                      >corporate_fare</span
+                    >
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-xs font-semibold text-text-muted uppercase tracking-wider"
+                      >Total Departments</span
+                    >
+                    <span
+                      id="overview-dept-count"
+                      class="text-2xl font-bold text-space-indigo leading-tight"
+                      >3</span
+                    >
+                    <span class="text-[11px] text-text-muted mt-0.5">Active functional units</span>
+                  </div>
+                </div>
+
+                <!-- Card 2: Total Positions -->
+                <div
+                  data-action="switch-tab"
+                  data-tab="positions"
+                  onclick="switchTab('positions')"
+                  class="rounded-2xl bg-white border border-warm-border p-5 shadow-xs flex items-center gap-4 transition-all hover:border-fawn/60 cursor-pointer group"
+                >
+                  <div
+                    class="w-12 h-12 rounded-xl bg-space-indigo/5 border border-warm-border flex items-center justify-center text-space-indigo shrink-0 group-hover:bg-dusk-blue/20 transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-[24px] text-dusk-blue">badge</span>
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-xs font-semibold text-text-muted uppercase tracking-wider"
+                      >Total Positions</span
+                    >
+                    <span
+                      id="overview-pos-count"
+                      class="text-2xl font-bold text-space-indigo leading-tight"
+                      >4</span
+                    >
+                    <span class="text-[11px] text-text-muted mt-0.5"
+                      >Clearance & permission tiers</span
+                    >
+                  </div>
+                </div>
+
+                <!-- Card 3: Total Members -->
+                <div
+                  data-action="switch-tab"
+                  data-tab="users"
+                  onclick="switchTab('users')"
+                  class="rounded-2xl bg-white border border-warm-border p-5 shadow-xs flex items-center gap-4 transition-all hover:border-fawn/60 cursor-pointer group"
+                >
+                  <div
+                    class="w-12 h-12 rounded-xl bg-space-indigo/5 border border-warm-border flex items-center justify-center text-space-indigo shrink-0 group-hover:bg-space-indigo/15 transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-[24px] text-space-indigo"
+                      >group</span
+                    >
+                  </div>
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-xs font-semibold text-text-muted uppercase tracking-wider"
+                      >Total Members</span
+                    >
+                    <span
+                      id="overview-user-count"
+                      class="text-2xl font-bold text-space-indigo leading-tight"
+                      >5</span
+                    >
+                    <span class="text-[11px] text-text-muted mt-0.5">Enrolled team accounts</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Actions Section -->
+              <div class="rounded-2xl bg-white border border-warm-border p-6 shadow-xs">
+                <div class="mb-4">
+                  <h2 class="text-base font-bold text-space-indigo">Quick Actions</h2>
+                  <p class="text-xs text-text-muted">
+                    Frequently used administrative actions for expanding your organisation.
+                  </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <!-- Action 1: Create Department -->
+                  <button
+                    type="button"
+                    id="quick-create-dept-btn"
+                    data-action="create-dept"
+                    onclick="openCreateDeptModal()"
+                    class="flex flex-col items-start p-4 rounded-xl border border-warm-border bg-fawn-surface hover:bg-white hover:border-fawn transition-all text-left group cursor-pointer"
+                  >
+                    <div
+                      class="w-9 h-9 rounded-lg bg-fawn/20 text-space-indigo flex items-center justify-center mb-3 group-hover:scale-105 transition-transform"
+                    >
+                      <span class="material-symbols-outlined text-[20px] text-fawn"
+                        >add_home_work</span
+                      >
+                    </div>
+                    <span
+                      class="text-sm font-bold text-space-indigo group-hover:text-dusk-blue transition-colors"
+                      >Create Department</span
+                    >
+                    <span class="text-xs text-text-muted mt-1 leading-relaxed"
+                      >Add a new operational department to your tenant.</span
+                    >
+                  </button>
+
+                  <!-- Action 2: Create Position -->
+                  <button
+                    type="button"
+                    id="quick-create-pos-btn"
+                    data-action="create-pos"
+                    onclick="openCreatePosModal()"
+                    class="flex flex-col items-start p-4 rounded-xl border border-warm-border bg-fawn-surface hover:bg-white hover:border-fawn transition-all text-left group cursor-pointer"
+                  >
+                    <div
+                      class="w-9 h-9 rounded-lg bg-dusk-blue/15 text-dusk-blue flex items-center justify-center mb-3 group-hover:scale-105 transition-transform"
+                    >
+                      <span class="material-symbols-outlined text-[20px] text-dusk-blue"
+                        >shield_person</span
+                      >
+                    </div>
+                    <span
+                      class="text-sm font-bold text-space-indigo group-hover:text-dusk-blue transition-colors"
+                      >Create Position</span
+                    >
+                    <span class="text-xs text-text-muted mt-1 leading-relaxed"
+                      >Establish a role with clearance & granular permissions.</span
+                    >
+                  </button>
+
+                  <!-- Action 3: Add New Member -->
+                  <button
+                    type="button"
+                    id="quick-add-member-btn"
+                    data-action="add-member"
+                    onclick="openAddMemberModal()"
+                    class="flex flex-col items-start p-4 rounded-xl border border-warm-border bg-fawn-surface hover:bg-white hover:border-fawn transition-all text-left group cursor-pointer"
+                  >
+                    <div
+                      class="w-9 h-9 rounded-lg bg-space-indigo/10 text-space-indigo flex items-center justify-center mb-3 group-hover:scale-105 transition-transform"
+                    >
+                      <span class="material-symbols-outlined text-[20px] text-space-indigo"
+                        >person_add</span
+                      >
+                    </div>
+                    <span
+                      class="text-sm font-bold text-space-indigo group-hover:text-dusk-blue transition-colors"
+                      >Add New Member</span
+                    >
+                    <span class="text-xs text-text-muted mt-1 leading-relaxed"
+                      >Enroll an employee with their department and position.</span
+                    >
+                  </button>
+                </div>
+              </div>
+
+              <!-- Organisation Baseline Snapshot -->
+              <div class="rounded-2xl bg-white border border-warm-border p-6 shadow-xs">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 class="text-base font-bold text-space-indigo">
+                      Department Directory Summary
+                    </h2>
+                    <p class="text-xs text-text-muted">
+                      Overview of current business departments and staffing headcount.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    data-action="switch-tab"
+                    data-tab="departments"
+                    onclick="switchTab('departments')"
+                    class="text-xs font-semibold text-dusk-blue hover:text-space-indigo hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>View all departments</span>
+                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                  </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead
+                      class="bg-fawn-subtle border-y border-warm-border text-text-muted uppercase text-[10px] tracking-wider font-semibold"
+                    >
+                      <tr>
+                        <th class="py-2.5 px-4">Code</th>
+                        <th class="py-2.5 px-4">Department Name</th>
+                        <th class="py-2.5 px-4">Headcount</th>
+                        <th class="py-2.5 px-4">Security Scope</th>
+                        <th class="py-2.5 px-4 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="overview-dept-tbody" class="divide-y divide-warm-border/60">
+                      <!-- Populated dynamically via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== TAB 2: DEPARTMENTS ==================== -->
+            <section id="tab-departments" class="tab-pane hidden space-y-6">
+              <!-- Section Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 class="text-2xl font-bold tracking-tight text-space-indigo">Departments</h1>
+                  <p class="text-xs text-text-muted mt-0.5">
+                    Organise your workforce into distinct operational divisions and security
+                    containers.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  id="tab-create-dept-btn"
+                  data-action="create-dept"
+                  onclick="openCreateDeptModal()"
+                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-fawn hover:bg-fawn-hover text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-[16px]">add</span>
+                  <span>Create Department</span>
+                </button>
+              </div>
+
+              <!-- Search Bar -->
+              <div
+                class="bg-white rounded-xl border border-warm-border p-3 shadow-xs flex items-center justify-between gap-3"
+              >
+                <div class="relative flex-1 max-w-md">
+                  <span
+                    class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-muted"
+                    >search</span
+                  >
+                  <input
+                    id="dept-search-input"
+                    type="text"
+                    oninput="filterDepartments()"
+                    placeholder="Search departments by name or code..."
+                    class="w-full pl-9 pr-4 py-2 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo placeholder:text-text-muted focus:bg-white focus:border-dusk-blue outline-none transition-all"
+                  />
+                </div>
+                <span id="dept-count-badge" class="text-xs text-text-muted font-medium px-2"
+                  >3 departments listed</span
+                >
+              </div>
+
+              <!-- Departments Table -->
+              <div class="rounded-2xl bg-white border border-warm-border overflow-hidden shadow-xs">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead
+                      class="bg-fawn-subtle border-b border-warm-border text-text-muted uppercase text-[10px] tracking-wider font-semibold"
+                    >
+                      <tr>
+                        <th class="py-3 px-4">Code</th>
+                        <th class="py-3 px-4">Department Details</th>
+                        <th class="py-3 px-4">Members</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="departments-table-body" class="divide-y divide-warm-border/60">
+                      <!-- Populated dynamically via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== TAB 3: POSITIONS & PERMISSIONS ==================== -->
+            <section id="tab-positions" class="tab-pane hidden space-y-6">
+              <!-- Section Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 class="text-2xl font-bold tracking-tight text-space-indigo">
+                    Positions & Permissions
+                  </h1>
+                  <p class="text-xs text-text-muted mt-0.5">
+                    Configure operational roles, clearance levels, and security permission sets.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  id="tab-create-pos-btn"
+                  data-action="create-pos"
+                  onclick="openCreatePosModal()"
+                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-fawn hover:bg-fawn-hover text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-[16px]">add</span>
+                  <span>Create Position</span>
+                </button>
+              </div>
+
+              <!-- Search Bar -->
+              <div
+                class="bg-white rounded-xl border border-warm-border p-3 shadow-xs flex items-center justify-between gap-3"
+              >
+                <div class="relative flex-1 max-w-md">
+                  <span
+                    class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-muted"
+                    >search</span
+                  >
+                  <input
+                    id="pos-search-input"
+                    type="text"
+                    oninput="filterPositions()"
+                    placeholder="Search positions by title or clearance..."
+                    class="w-full pl-9 pr-4 py-2 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo placeholder:text-text-muted focus:bg-white focus:border-dusk-blue outline-none transition-all"
+                  />
+                </div>
+                <span id="pos-count-badge" class="text-xs text-text-muted font-medium px-2"
+                  >4 positions listed</span
+                >
+              </div>
+
+              <!-- Positions Grid -->
+              <div id="positions-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </section>
+
+            <!-- ==================== TAB 4: USERS (MEMBERS) ==================== -->
+            <section id="tab-users" class="tab-pane hidden space-y-6">
+              <!-- Section Header -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 class="text-2xl font-bold tracking-tight text-space-indigo">
+                    Organisation Members
+                  </h1>
+                  <p class="text-xs text-text-muted mt-0.5">
+                    Enroll, assign, and manage verified employee accounts within your organisation
+                    enclave.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  id="tab-add-member-btn"
+                  data-action="add-member"
+                  onclick="openAddMemberModal()"
+                  class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-fawn hover:bg-fawn-hover text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                >
+                  <span class="material-symbols-outlined text-[16px]">person_add</span>
+                  <span>Add New Member</span>
+                </button>
+              </div>
+
+              <!-- Filters & Search Toolbar -->
+              <div
+                class="bg-white rounded-xl border border-warm-border p-3 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3"
+              >
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+                  <!-- Search input -->
+                  <div class="relative flex-1 max-w-sm">
+                    <span
+                      class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-muted"
+                      >search</span
+                    >
+                    <input
+                      id="user-search-input"
+                      type="text"
+                      oninput="filterMembers()"
+                      placeholder="Search member name or email..."
+                      class="w-full pl-9 pr-4 py-2 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo placeholder:text-text-muted focus:bg-white focus:border-dusk-blue outline-none transition-all"
+                    />
+                  </div>
+
+                  <!-- Department Filter -->
+                  <select
+                    id="user-dept-filter"
+                    onchange="filterMembers()"
+                    class="py-2 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none cursor-pointer"
+                  >
+                    <option value="ALL">All Departments</option>
+                  </select>
+                </div>
+                <span
+                  id="user-count-badge"
+                  class="text-xs text-text-muted self-end sm:self-center font-medium px-2"
+                  >5 members listed</span
+                >
+              </div>
+
+              <!-- Members Table -->
+              <div class="rounded-2xl bg-white border border-warm-border overflow-hidden shadow-xs">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead
+                      class="bg-fawn-subtle border-b border-warm-border text-text-muted uppercase text-[10px] tracking-wider font-semibold"
+                    >
+                      <tr>
+                        <th class="py-3 px-4">Member Name</th>
+                        <th class="py-3 px-4">Work Email</th>
+                        <th class="py-3 px-4">Department</th>
+                        <th class="py-3 px-4">Position & Clearance</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="members-table-body" class="divide-y divide-warm-border/60">
+                      <!-- Populated dynamically via JS -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+            <!-- ==================== TAB 5: ORGANISATION SETTINGS ==================== -->
+            <section id="tab-settings" class="tab-pane hidden space-y-6">
+              <!-- Section Header -->
+              <div>
+                <h1 class="text-2xl font-bold tracking-tight text-space-indigo">
+                  Organisation Settings
+                </h1>
+                <p class="text-xs text-text-muted mt-0.5">
+                  Tenant profile details and cryptographic security baseline configuration.
+                </p>
+              </div>
+
+              <!-- Settings Grid -->
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Card 1: Organisation Information -->
+                <div class="rounded-2xl bg-white border border-warm-border p-6 shadow-xs space-y-4">
+                  <div class="flex items-center gap-3 border-b border-warm-border/60 pb-3">
+                    <div
+                      class="w-9 h-9 rounded-lg bg-fawn/15 flex items-center justify-center text-fawn"
+                    >
+                      <span class="material-symbols-outlined text-[20px]">domain</span>
+                    </div>
+                    <div>
+                      <h2 class="text-sm font-bold text-space-indigo">Organisation Profile</h2>
+                      <p class="text-[11px] text-text-muted">
+                        Primary tenant identifier and registration parameters.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="space-y-3 text-xs">
+                    <div>
+                      <span class="block text-[11px] font-semibold text-text-muted"
+                        >Organisation Legal Name</span
+                      >
+                      <p id="settings-org-name" class="font-bold text-space-indigo text-sm mt-0.5">
+                        Acme Corporation
+                      </p>
+                    </div>
+                    <div>
+                      <span class="block text-[11px] font-semibold text-text-muted"
+                        >Organisation Type</span
+                      >
+                      <p id="settings-org-type" class="font-medium text-space-indigo mt-0.5">
+                        Corporation
+                      </p>
+                    </div>
+                    <div>
+                      <span class="block text-[11px] font-semibold text-text-muted"
+                        >Tenant Identifier</span
+                      >
+                      <div class="flex items-center gap-2 mt-0.5">
+                        <p
+                          id="settings-org-id"
+                          class="font-mono text-[11px] text-dusk-blue select-all bg-fawn-subtle px-2 py-0.5 rounded border border-warm-border"
+                        >
+                          c8f9411b-32df-4235-961f-13a863a34a17
+                        </p>
+                        <button
+                          type="button"
+                          onclick="copyTenantId()"
+                          class="text-xs text-text-muted hover:text-dusk-blue p-1 rounded transition-colors cursor-pointer"
+                          title="Copy Tenant ID"
+                        >
+                          <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="block text-[11px] font-semibold text-text-muted"
+                        >Account Status</span
+                      >
+                      <span
+                        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 mt-1"
+                      >
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>Active Enclave</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Security & Governance Baseline -->
+                <div class="rounded-2xl bg-white border border-warm-border p-6 shadow-xs space-y-4">
+                  <div class="flex items-center gap-3 border-b border-warm-border/60 pb-3">
+                    <div
+                      class="w-9 h-9 rounded-lg bg-dusk-blue/15 flex items-center justify-center text-dusk-blue"
+                    >
+                      <span class="material-symbols-outlined text-[20px]">verified_user</span>
+                    </div>
+                    <div>
+                      <h2 class="text-sm font-bold text-space-indigo">
+                        Security Architecture Baseline
+                      </h2>
+                      <p class="text-[11px] text-text-muted">
+                        Standard cryptographic rules governing this tenant.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="space-y-3 text-xs">
+                    <div class="flex items-start gap-2.5">
+                      <span class="material-symbols-outlined text-fawn text-[18px] shrink-0 mt-0.5"
+                        >key</span
+                      >
+                      <div>
+                        <p class="font-bold text-space-indigo">Ed25519 Cryptographic Signatures</p>
+                        <p class="text-text-muted text-[11px]">
+                          Individual signing keypairs generated at member enrollment. Private keys
+                          encrypted with AES-256-GCM.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                      <span
+                        class="material-symbols-outlined text-dusk-blue text-[18px] shrink-0 mt-0.5"
+                        >link</span
+                      >
+                      <div>
+                        <p class="font-bold text-space-indigo">Hash-Chained Audit Ledger</p>
+                        <p class="text-text-muted text-[11px]">
+                          Strict append-only audit trail anchored with SHA-256 state hashing for
+                          zero-tamper verification.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                      <span
+                        class="material-symbols-outlined text-space-indigo text-[18px] shrink-0 mt-0.5"
+                        >shield</span
+                      >
+                      <div>
+                        <p class="font-bold text-space-indigo">Deny-by-Default Access Policy</p>
+                        <p class="text-text-muted text-[11px]">
+                          4 clearance tiers with department scoping and granular permission
+                          controls.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- 1. CREATE / EDIT DEPARTMENT MODAL -->
+    <div
+      id="modal-dept"
+      style="display: none"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
+    >
+      <div
+        class="w-full max-w-md bg-white rounded-2xl border border-warm-border shadow-2xl p-6 space-y-4"
+      >
+        <div class="flex items-center justify-between border-b border-warm-border pb-3">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-md bg-fawn/15 text-fawn flex items-center justify-center">
+              <span class="material-symbols-outlined text-[18px]">corporate_fare</span>
+            </div>
+            <h3 id="dept-modal-title" class="text-base font-bold text-space-indigo">
+              Create New Department
+            </h3>
+          </div>
+          <button
+            type="button"
+            id="close-modal-dept-btn"
+            onclick="closeModal('modal-dept')"
+            class="text-text-muted hover:text-space-indigo p-1 rounded-md focus:outline-none cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <form id="form-dept" novalidate onsubmit="handleSaveDepartment(event)" class="space-y-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-space-indigo" for="dept-name-input">
+              Department Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="dept-name-input"
+              type="text"
+              placeholder="e.g. Legal Operations & Compliance"
+              class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none transition-colors"
+              required
+            />
+            <p id="dept-name-error" class="hidden text-xs text-red-600 mt-1"></p>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-space-indigo" for="dept-code-input">
+              Department Code <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="dept-code-input"
+              type="text"
+              maxlength="8"
+              placeholder="e.g. LEGAL"
+              class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo uppercase font-mono focus:bg-white focus:border-dusk-blue outline-none transition-colors"
+              required
+            />
+            <p class="text-[10px] text-text-muted">Short uppercase identifier (2-8 letters).</p>
+            <p id="dept-code-error" class="hidden text-xs text-red-600 mt-1"></p>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-warm-border/60">
+            <button
+              type="button"
+              onclick="closeModal('modal-dept')"
+              class="px-3.5 py-2 rounded-lg border border-warm-border text-xs font-medium text-text-muted hover:text-space-indigo hover:bg-fawn-subtle transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              id="save-dept-btn"
+              type="submit"
+              class="px-4 py-2 rounded-lg bg-fawn hover:bg-fawn-hover text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            >
+              Save Department
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2. CREATE / EDIT POSITION MODAL -->
+    <div
+      id="modal-pos"
+      style="display: none"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
+    >
+      <div
+        class="w-full max-w-lg bg-white rounded-2xl border border-warm-border shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar"
+      >
+        <div class="flex items-center justify-between border-b border-warm-border pb-3">
+          <div class="flex items-center gap-2">
+            <div
+              class="w-7 h-7 rounded-md bg-dusk-blue/15 text-dusk-blue flex items-center justify-center"
+            >
+              <span class="material-symbols-outlined text-[18px]">badge</span>
+            </div>
+            <h3 id="pos-modal-title" class="text-base font-bold text-space-indigo">
+              Create Position & Set Permissions
+            </h3>
+          </div>
+          <button
+            type="button"
+            id="close-modal-pos-btn"
+            onclick="closeModal('modal-pos')"
+            class="text-text-muted hover:text-space-indigo p-1 rounded-md focus:outline-none cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <form id="form-pos" novalidate onsubmit="handleSavePosition(event)" class="space-y-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-space-indigo" for="pos-title-input">
+              Position Title <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="pos-title-input"
+              type="text"
+              placeholder="e.g. Compliance Officer"
+              class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none transition-colors"
+              required
+            />
+            <p id="pos-title-error" class="hidden text-xs text-red-600 mt-1"></p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label
+                class="block text-xs font-semibold text-space-indigo"
+                for="pos-clearance-select"
+              >
+                Clearance Level <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="pos-clearance-select"
+                class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none cursor-pointer"
+              >
+                <option value="1">Level 1 - Public</option>
+                <option value="2" selected>Level 2 - Internal</option>
+                <option value="3">Level 3 - Confidential</option>
+                <option value="4">Level 4 - Restricted</option>
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-space-indigo" for="pos-scope-select">
+                Department Scope <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="pos-scope-select"
+                class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none cursor-pointer"
+              >
+                <option value="OWN_DEPT" selected>OWN_DEPT (Own Department Only)</option>
+                <option value="ORG">ORG (Entire Organisation)</option>
+                <option value="ASSIGNED">ASSIGNED (Joined Workspaces Only)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Grouped Permissions -->
+          <div class="space-y-3 pt-2 border-t border-warm-border/60">
+            <label class="block text-xs font-bold text-space-indigo uppercase tracking-wider"
+              >Granular Permissions</label
+            >
+
+            <!-- Document Operations Group -->
+            <div class="p-3 bg-fawn-surface rounded-xl border border-warm-border/80 space-y-2">
+              <span class="block text-[11px] font-bold text-space-indigo">Document Operations</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="perm-VIEW"
+                    checked
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>VIEW (Read & Download)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="perm-UPLOAD"
+                    checked
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>UPLOAD (New Document)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="perm-EDIT"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>EDIT (Add Versions)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="perm-SIGN"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>SIGN (Digital Signature)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="perm-SHARE"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>SHARE (Temporary Links)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Administrative & Governance Group -->
+            <div class="p-3 bg-fawn-surface rounded-xl border border-warm-border/80 space-y-2">
+              <span class="block text-[11px] font-bold text-space-indigo">Governance & Audit</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="perm-AUDIT"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>AUDIT (Inspect Audit Log)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="perm-MANAGE_ORG"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>MANAGE_ORG (Admin Controls)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-warm-border/60">
+            <button
+              type="button"
+              onclick="closeModal('modal-pos')"
+              class="px-3.5 py-2 rounded-lg border border-warm-border text-xs font-medium text-text-muted hover:text-space-indigo hover:bg-fawn-subtle transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              id="save-pos-btn"
+              type="submit"
+              class="px-4 py-2 rounded-lg bg-fawn hover:bg-fawn-hover text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            >
+              Save Position
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 3. ADD NEW MEMBER MODAL -->
+    <div
+      id="modal-member"
+      style="display: none"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
+    >
+      <div
+        class="w-full max-w-md bg-white rounded-2xl border border-warm-border shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar"
+      >
+        <div class="flex items-center justify-between border-b border-warm-border pb-3">
+          <div class="flex items-center gap-2">
+            <div
+              class="w-7 h-7 rounded-md bg-space-indigo/10 text-space-indigo flex items-center justify-center"
+            >
+              <span class="material-symbols-outlined text-[18px]">person_add</span>
+            </div>
+            <h3 class="text-base font-bold text-space-indigo">Add New Organisation Member</h3>
+          </div>
+          <button
+            type="button"
+            id="close-modal-member-btn"
+            onclick="closeModal('modal-member')"
+            class="text-text-muted hover:text-space-indigo p-1 rounded-md focus:outline-none cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <form id="form-member" novalidate onsubmit="handleSaveMember(event)" class="space-y-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-space-indigo" for="member-name-input">
+              Full Name <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="member-name-input"
+              type="text"
+              placeholder="e.g. Jordan Miller"
+              class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none transition-colors"
+              required
+            />
+            <p id="member-name-error" class="hidden text-xs text-red-600 mt-1"></p>
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-space-indigo" for="member-email-input">
+              Work Email <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="member-email-input"
+              type="email"
+              placeholder="e.g. j.miller@acme.com"
+              class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none transition-colors"
+              required
+            />
+            <p id="member-email-error" class="hidden text-xs text-red-600 mt-1"></p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-space-indigo" for="member-dept-select">
+                Department <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="member-dept-select"
+                class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none cursor-pointer"
+              >
+                <!-- Populated dynamically via JS -->
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-semibold text-space-indigo" for="member-pos-select">
+                Position & Clearance <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="member-pos-select"
+                class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none cursor-pointer"
+              >
+                <!-- Populated dynamically via JS -->
+              </select>
+            </div>
+          </div>
+
+          <div class="space-y-1">
+            <label
+              class="block text-xs font-semibold text-space-indigo"
+              for="member-password-input"
+            >
+              Initial Temporary Password <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <input
+                id="member-password-input"
+                type="password"
+                value="Temporary123!"
+                class="w-full h-10 pl-3 pr-10 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none transition-colors"
+                required
+              />
+              <button
+                type="button"
+                onclick="toggleMemberPassword()"
+                class="absolute right-2.5 top-2.5 text-text-muted hover:text-space-indigo p-0.5 cursor-pointer"
+              >
+                <span id="member-pwd-icon" class="material-symbols-outlined text-[16px]"
+                  >visibility</span
+                >
+              </button>
+            </div>
+            <p class="text-[10px] text-text-muted">
+              The user will be prompted to replace this upon first sign-in.
+            </p>
+            <p id="member-password-error" class="hidden text-xs text-red-600 mt-1"></p>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-warm-border/60">
+            <button
+              type="button"
+              onclick="closeModal('modal-member')"
+              class="px-3.5 py-2 rounded-lg border border-warm-border text-xs font-medium text-text-muted hover:text-space-indigo hover:bg-fawn-subtle transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              id="save-member-btn"
+              type="submit"
+              class="px-4 py-2 rounded-lg bg-fawn hover:bg-fawn-hover text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            >
+              Add Member
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 4. EDIT MEMBER & PERMISSIONS MODAL -->
+    <div
+      id="modal-edit-member"
+      style="display: none"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
+    >
+      <div
+        class="w-full max-w-lg bg-white rounded-2xl border border-warm-border shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar"
+      >
+        <div class="flex items-center justify-between border-b border-warm-border pb-3">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-md bg-fawn/15 text-fawn flex items-center justify-center">
+              <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+            </div>
+            <div>
+              <h3 id="edit-member-modal-title" class="text-base font-bold text-space-indigo">
+                Edit Member & Permissions
+              </h3>
+              <p class="text-[11px] text-text-muted">
+                Configure role clearance and granular access permissions for this account.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            id="close-modal-edit-member-btn"
+            onclick="closeModal('modal-edit-member')"
+            class="text-text-muted hover:text-space-indigo p-1 rounded-md focus:outline-none cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        <form
+          id="form-edit-member"
+          novalidate
+          onsubmit="handleSaveEditMember(event)"
+          class="space-y-4"
+        >
+          <input type="hidden" id="edit-member-id" value="" />
+
+          <!-- Full Name & Work Email -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label
+                class="block text-xs font-semibold text-space-indigo"
+                for="edit-member-name-input"
+              >
+                Full Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="edit-member-name-input"
+                type="text"
+                placeholder="e.g. Jordan Miller"
+                class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none transition-colors"
+                required
+              />
+              <p id="edit-member-name-error" class="hidden text-xs text-red-600 mt-1"></p>
+            </div>
+
+            <div class="space-y-1">
+              <label
+                class="block text-xs font-semibold text-space-indigo"
+                for="edit-member-email-input"
+              >
+                Work Email <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="edit-member-email-input"
+                type="email"
+                placeholder="e.g. j.miller@acme.com"
+                class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none transition-colors"
+                required
+              />
+              <p id="edit-member-email-error" class="hidden text-xs text-red-600 mt-1"></p>
+            </div>
+          </div>
+
+          <!-- Department & Position -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-1">
+              <label
+                class="block text-xs font-semibold text-space-indigo"
+                for="edit-member-dept-select"
+              >
+                Department <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="edit-member-dept-select"
+                class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none cursor-pointer"
+              >
+                <!-- Populated dynamically via JS -->
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label
+                class="block text-xs font-semibold text-space-indigo"
+                for="edit-member-pos-select"
+              >
+                Assigned Position <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="edit-member-pos-select"
+                onchange="onEditMemberPosChange()"
+                class="w-full h-10 px-3 text-xs bg-fawn-surface border border-warm-border rounded-lg text-space-indigo focus:bg-white focus:border-dusk-blue outline-none cursor-pointer"
+              >
+                <!-- Populated dynamically via JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Position Clearance & Scope Banner -->
+          <div
+            class="p-3 bg-fawn-subtle rounded-xl border border-warm-border/80 flex items-center justify-between text-xs"
+          >
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-dusk-blue text-[20px]"
+                >verified_user</span
+              >
+              <div>
+                <span id="edit-member-pos-clearance-label" class="font-bold text-space-indigo"
+                  >Level 2 - Internal</span
+                >
+                <span id="edit-member-pos-scope-label" class="text-text-muted text-[11px] block"
+                  >Scope: OWN_DEPT</span
+                >
+              </div>
+            </div>
+            <button
+              type="button"
+              onclick="resetEditMemberPermissions()"
+              class="px-2.5 py-1 text-[11px] font-semibold text-dusk-blue hover:text-space-indigo bg-white rounded border border-warm-border hover:bg-fawn-surface transition-colors cursor-pointer"
+            >
+              Reset to Defaults
+            </button>
+          </div>
+
+          <!-- User Granular Permissions -->
+          <div class="space-y-3 pt-2 border-t border-warm-border/60">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-space-indigo uppercase tracking-wider">
+                User Granular Permissions
+              </label>
+              <span
+                id="edit-member-custom-badge"
+                class="hidden text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200"
+              >
+                Customized Permissions
+              </span>
+            </div>
+
+            <!-- Document Operations Group -->
+            <div class="p-3 bg-fawn-surface rounded-xl border border-warm-border/80 space-y-2">
+              <span class="block text-[11px] font-bold text-space-indigo">Document Operations</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="edit-perm-VIEW"
+                    onchange="onEditPermCheckboxChange()"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>VIEW (Read & Download)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="edit-perm-UPLOAD"
+                    onchange="onEditPermCheckboxChange()"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>UPLOAD (New Document)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="edit-perm-EDIT"
+                    onchange="onEditPermCheckboxChange()"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>EDIT (Add Versions)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="edit-perm-SIGN"
+                    onchange="onEditPermCheckboxChange()"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>SIGN (Digital Signature)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="edit-perm-SHARE"
+                    onchange="onEditPermCheckboxChange()"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>SHARE (Temporary Links)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Administrative & Governance Group -->
+            <div class="p-3 bg-fawn-surface rounded-xl border border-warm-border/80 space-y-2">
+              <span class="block text-[11px] font-bold text-space-indigo">Governance & Audit</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="edit-perm-AUDIT"
+                    onchange="onEditPermCheckboxChange()"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>AUDIT (Inspect Audit Log)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    id="edit-perm-MANAGE_ORG"
+                    onchange="onEditPermCheckboxChange()"
+                    class="rounded border-warm-border text-space-indigo focus:ring-dusk-blue"
+                  />
+                  <span>MANAGE_ORG (Admin Controls)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2 border-t border-warm-border/60">
+            <button
+              type="button"
+              onclick="closeModal('modal-edit-member')"
+              class="px-3.5 py-2 rounded-lg border border-warm-border text-xs font-medium text-text-muted hover:text-space-indigo hover:bg-fawn-subtle transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              id="save-edit-member-btn"
+              type="submit"
+              class="px-4 py-2 rounded-lg bg-fawn hover:bg-fawn-hover text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            >
+              Save Permissions & Member
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 5. DELETE MEMBER CONFIRMATION MODAL -->
+    <div
+      id="modal-delete-member"
+      style="display: none"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
+    >
+      <div
+        class="w-full max-w-sm bg-white rounded-2xl border border-warm-border shadow-2xl p-6 space-y-4"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-full bg-red-50 text-red-600 flex items-center justify-center shrink-0"
+          >
+            <span class="material-symbols-outlined text-[22px]">person_remove</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-space-indigo">Remove Member?</h3>
+            <p
+              id="delete-member-confirm-msg"
+              class="text-xs text-text-muted mt-0.5 leading-relaxed"
+            >
+              Are you sure you want to remove this member from your organisation?
+            </p>
+          </div>
+        </div>
+        <p
+          class="text-[11px] text-text-muted bg-fawn-surface p-2.5 rounded-lg border border-warm-border"
+        >
+          This will revoke all active credentials, permissions, and cryptographic access for this
+          user within your tenant enclave.
+        </p>
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-warm-border/60">
+          <button
+            type="button"
+            onclick="closeModal('modal-delete-member')"
+            class="px-3.5 py-2 rounded-lg border border-warm-border text-xs font-medium text-text-muted hover:text-space-indigo hover:bg-fawn-subtle transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            id="confirm-delete-member-btn"
+            type="button"
+            onclick="confirmDeleteMember()"
+            class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+          >
+            Delete Member
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Library -->
+    <script src="/toast.js"></script>
+
+    <!-- ==================== DASHBOARD JAVASCRIPT LOGIC ==================== -->
+    <script>
+      // State Store
+      const state = {
+        activeTab: 'overview',
+        organization: {
+          id: 'c8f9411b-32df-4235-961f-13a863a34a17',
+          name: 'Acme Corporation',
+          orgType: 'Corporation',
+        },
+        currentAdmin: {
+          name: 'Elena Vance',
+          email: 'elena.vance@acme.com',
+          role: 'Administrator',
+        },
+        departments: [
+          {
+            id: 'dept-1',
+            code: 'EXEC',
+            name: 'Executive & Legal Operations',
+            membersCount: 2,
+            status: 'Active',
+          },
+          {
+            id: 'dept-2',
+            code: 'ENG',
+            name: 'Engineering & Systems Architecture',
+            membersCount: 2,
+            status: 'Active',
+          },
+          {
+            id: 'dept-3',
+            code: 'SEC',
+            name: 'Security & Risk Governance',
+            membersCount: 1,
+            status: 'Active',
+          },
+        ],
+        positions: [
+          {
+            id: 'pos-1',
+            title: 'Administrator',
+            clearanceLevel: 4,
+            deptScope: 'ORG',
+            permissions: ['VIEW', 'UPLOAD', 'EDIT', 'SIGN', 'SHARE', 'AUDIT', 'MANAGE_ORG'],
+          },
+          {
+            id: 'pos-2',
+            title: 'Legal Counsel',
+            clearanceLevel: 3,
+            deptScope: 'ORG',
+            permissions: ['VIEW', 'UPLOAD', 'SIGN', 'SHARE'],
+          },
+          {
+            id: 'pos-3',
+            title: 'Senior Systems Engineer',
+            clearanceLevel: 3,
+            deptScope: 'OWN_DEPT',
+            permissions: ['VIEW', 'UPLOAD', 'EDIT'],
+          },
+          {
+            id: 'pos-4',
+            title: 'Compliance Auditor',
+            clearanceLevel: 2,
+            deptScope: 'ORG',
+            permissions: ['VIEW', 'AUDIT'],
+          },
+        ],
+        members: [
+          {
+            id: 'user-1',
+            name: 'Elena Vance',
+            email: 'elena.vance@acme.com',
+            departmentId: 'dept-1',
+            positionId: 'pos-1',
+            permissions: ['VIEW', 'UPLOAD', 'EDIT', 'SIGN', 'SHARE', 'AUDIT', 'MANAGE_ORG'],
+            isActive: true,
+          },
+          {
+            id: 'user-2',
+            name: 'Arthur Pendelton',
+            email: 'arthur.pendelton@acme.com',
+            departmentId: 'dept-1',
+            positionId: 'pos-2',
+            permissions: ['VIEW', 'UPLOAD', 'SIGN', 'SHARE'],
+            isActive: true,
+          },
+          {
+            id: 'user-3',
+            name: 'Maya Lin',
+            email: 'maya.lin@acme.com',
+            departmentId: 'dept-2',
+            positionId: 'pos-3',
+            permissions: ['VIEW', 'UPLOAD', 'EDIT'],
+            isActive: true,
+          },
+          {
+            id: 'user-4',
+            name: 'David Zhao',
+            email: 'david.zhao@acme.com',
+            departmentId: 'dept-2',
+            positionId: 'pos-3',
+            permissions: ['VIEW', 'UPLOAD', 'EDIT'],
+            isActive: true,
+          },
+          {
+            id: 'user-5',
+            name: 'Kavita Rao',
+            email: 'kavita.rao@acme.com',
+            departmentId: 'dept-3',
+            positionId: 'pos-4',
+            permissions: ['VIEW', 'AUDIT'],
+            isActive: true,
+          },
+        ],
+      };
+
+      // Clearance Level Titles Mapping
+      const CLEARANCE_LABELS = {
+        1: { name: 'Level 1 - Public', badge: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+        2: { name: 'Level 2 - Internal', badge: 'bg-blue-50 text-blue-800 border-blue-200' },
+        3: { name: 'Level 3 - Confidential', badge: 'bg-amber-50 text-amber-900 border-amber-200' },
+        4: {
+          name: 'Level 4 - Restricted',
+          badge: 'bg-purple-50 text-purple-900 border-purple-200',
+        },
+      };
+
+      // Navigation & Tab Switching
+      function switchTab(tabId) {
+        state.activeTab = tabId;
+
+        // Update Tab Pane visibility
+        document.querySelectorAll('.tab-pane').forEach((pane) => {
+          pane.classList.add('hidden');
+          pane.style.display = 'none';
+        });
+        const activePane = document.getElementById(`tab-${tabId}`);
+        if (activePane) {
+          activePane.classList.remove('hidden');
+          activePane.style.display = 'block';
+        }
+
+        // Update Nav Buttons
+        document.querySelectorAll('.nav-item').forEach((btn) => {
+          btn.classList.remove(
+            'nav-active',
+            'bg-white/10',
+            'text-white',
+            'border-l-2',
+            'border-fawn',
+            'font-semibold',
+          );
+          btn.classList.add('text-white/70', 'font-medium');
+          const icon = btn.querySelector('.material-symbols-outlined');
+          if (icon) {
+            icon.classList.remove('text-fawn');
+            icon.classList.add('text-white/50');
+          }
+        });
+
+        const activeBtn = document.getElementById(`nav-btn-${tabId}`);
+        if (activeBtn) {
+          activeBtn.classList.add(
+            'nav-active',
+            'bg-white/10',
+            'text-white',
+            'border-l-2',
+            'border-fawn',
+            'font-semibold',
+          );
+          activeBtn.classList.remove('text-white/70', 'font-medium');
+          const icon = activeBtn.querySelector('.material-symbols-outlined');
+          if (icon) {
+            icon.classList.add('text-fawn');
+            icon.classList.remove('text-white/50');
+          }
+        }
+
+        // Breadcrumb label
+        const breadcrumbNames = {
+          overview: 'Overview',
+          departments: 'Departments',
+          positions: 'Positions & Permissions',
+          users: 'Organisation Members',
+          settings: 'Settings',
+        };
+        const bc = document.getElementById('topbar-breadcrumb-section');
+        if (bc) bc.textContent = breadcrumbNames[tabId] || 'Overview';
+
+        // Close mobile drawer on navigation
+        closeMobileSidebar();
+      }
+
+      // Modal Helpers
+      function openModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+          modal.style.display = 'flex';
+          modal.classList.remove('hidden');
+        }
+      }
+
+      function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) {
+          modal.style.display = 'none';
+          modal.classList.add('hidden');
+        }
+      }
+
+      // User Dropdown in Top Bar
+      let dropdownLastToggled = 0;
+      function toggleUserDropdown(e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        const now = Date.now();
+        if (now - dropdownLastToggled < 200) return;
+        dropdownLastToggled = now;
+
+        const menu = document.getElementById('user-dropdown-menu');
+        if (menu) {
+          const isHidden = menu.style.display === 'none' || menu.classList.contains('hidden');
+          if (isHidden) {
+            menu.style.display = 'block';
+            menu.classList.remove('hidden');
+          } else {
+            menu.style.display = 'none';
+            menu.classList.add('hidden');
+          }
+        }
+      }
+
+      // Close dropdown when clicking outside
+      window.addEventListener('click', (e) => {
+        const menu = document.getElementById('user-dropdown-menu');
+        const btn = document.getElementById('admin-user-menu-btn');
+        if (menu && menu.style.display !== 'none' && !menu.classList.contains('hidden')) {
+          if (btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+            menu.style.display = 'none';
+            menu.classList.add('hidden');
+          }
+        }
+      });
+
+      // Close modals when clicking backdrop
+      window.addEventListener('click', (e) => {
+        if (e.target && e.target.classList.contains('modal-backdrop')) {
+          closeModal(e.target.id);
+        }
+      });
+
+      // Escape key closes modals
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeModal('modal-dept');
+          closeModal('modal-pos');
+          closeModal('modal-member');
+          closeModal('modal-edit-member');
+          closeModal('modal-delete-member');
+        }
+      });
+
+      // Mobile Sidebar Drawer
+      function openMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('mobile-backdrop');
+        if (sidebar) sidebar.classList.remove('-translate-x-full');
+        if (backdrop) {
+          backdrop.style.display = 'block';
+          backdrop.classList.remove('hidden');
+        }
+      }
+
+      function closeMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('mobile-backdrop');
+        if (sidebar) sidebar.classList.add('-translate-x-full');
+        if (backdrop) {
+          backdrop.style.display = 'none';
+          backdrop.classList.add('hidden');
+        }
+      }
+
+      // Backend Data Sync Functions (Neon PostgreSQL Persistence)
+      async function reloadDepartmentsFromBackend() {
+        const token = localStorage.getItem('dv_token');
+        if (!token) return;
+        try {
+          const res = await fetch('/api/v1/departments', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const body = await res.json();
+            if (Array.isArray(body?.data)) {
+              state.departments = body.data.map((d) => ({
+                id: d.id,
+                code: d.code,
+                name: d.name,
+                membersCount: Number(d.membersCount || 0),
+                status: 'Active',
+              }));
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to reload departments from backend:', err);
+        }
+      }
+
+      async function reloadPositionsFromBackend() {
+        const token = localStorage.getItem('dv_token');
+        if (!token) return;
+        try {
+          const res = await fetch('/api/v1/positions', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const body = await res.json();
+            if (Array.isArray(body?.data)) {
+              state.positions = body.data.map((p) => ({
+                id: p.id,
+                title: p.title,
+                clearanceLevel: Number(p.clearanceLevel || 1),
+                deptScope: p.deptScope || 'ORG',
+                permissions: Array.isArray(p.permissions) ? p.permissions : [],
+              }));
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to reload positions from backend:', err);
+        }
+      }
+
+      async function reloadUsersFromBackend() {
+        const token = localStorage.getItem('dv_token');
+        if (!token) return;
+        try {
+          const res = await fetch('/api/v1/users', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const body = await res.json();
+            if (Array.isArray(body?.data)) {
+              state.members = body.data.map((u) => ({
+                id: u.id,
+                name: u.fullName,
+                email: u.email,
+                departmentId: u.departmentId,
+                positionId: u.positionId,
+                permissions: Array.isArray(u.permissions) ? u.permissions : [],
+                isActive: u.isActive !== false,
+              }));
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to reload users from backend:', err);
+        }
+      }
+
+      // Initialise Profile from Local Storage or Backend
+      async function loadAdminSession() {
+        try {
+          // Check local storage cached org if available
+          const cachedOrgStr = localStorage.getItem('dv_org');
+          if (cachedOrgStr) {
+            try {
+              const cachedOrg = JSON.parse(cachedOrgStr);
+              if (cachedOrg?.name) state.organization.name = cachedOrg.name;
+              if (cachedOrg?.id) state.organization.id = cachedOrg.id;
+              if (cachedOrg?.orgType) state.organization.orgType = cachedOrg.orgType;
+            } catch (e) {}
+          }
+          const cachedUserStr = localStorage.getItem('dv_user');
+          if (cachedUserStr) {
+            try {
+              const cachedUser = JSON.parse(cachedUserStr);
+              if (cachedUser?.fullName) state.currentAdmin.name = cachedUser.fullName;
+              if (cachedUser?.email) state.currentAdmin.email = cachedUser.email;
+            } catch (e) {}
+          }
+
+          const token = localStorage.getItem('dv_token');
+          if (token) {
+            const res = await fetch('/api/v1/auth/me', {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data?.data) {
+                const { user, organization, department, position, permissions } = data.data;
+                if (organization?.name) state.organization.name = organization.name;
+                if (organization?.id) state.organization.id = organization.id;
+                if (organization?.orgType) state.organization.orgType = organization.orgType;
+                if (user?.fullName) state.currentAdmin.name = user.fullName;
+                if (user?.email) state.currentAdmin.email = user.email;
+
+                // Enforce RBAC permission: Only users with MANAGE_ORG may access the Organisation Admin Dashboard
+                if (Array.isArray(permissions) && !permissions.includes('MANAGE_ORG')) {
+                  window.location.replace('/home.html');
+                  return;
+                }
+
+                // Load real departments, positions, and organisation members directly from Neon PostgreSQL
+                await Promise.all([
+                  reloadDepartmentsFromBackend(),
+                  reloadPositionsFromBackend(),
+                  reloadUsersFromBackend(),
+                ]);
+              }
+            } else if (res.status === 401) {
+              localStorage.removeItem('dv_token');
+              localStorage.removeItem('dv_user');
+              window.location.href = '/login.html';
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn('Session load warning:', err);
+        }
+
+        const orgName = state.organization.name || 'Acme Corporation';
+        const orgType = state.organization.orgType || 'Corporation';
+        const adminName = state.currentAdmin.name || 'Administrator';
+        const adminEmail = state.currentAdmin.email || 'admin@org.com';
+        const initials =
+          adminName
+            .split(' ')
+            .filter(Boolean)
+            .map((n) => n[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase() || 'AD';
+
+        const setTxt = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = val;
+        };
+
+        setTxt('sidebar-org-name', orgName);
+        setTxt('settings-org-name', orgName);
+        setTxt('settings-org-id', state.organization.id);
+        setTxt('settings-org-type', orgType);
+
+        setTxt('admin-name-display', adminName);
+        setTxt('admin-email-display', adminEmail);
+        setTxt('admin-avatar-pill', initials);
+        setTxt('topbar-admin-name', adminName);
+        setTxt('topbar-avatar', initials);
+        setTxt('dropdown-admin-name', adminName);
+        setTxt('dropdown-admin-email', adminEmail);
+
+        renderAll();
+      }
+
+      // Render All Sections
+      function renderAll() {
+        renderOverview();
+        renderDepartments();
+        renderPositions();
+        renderMembers();
+      }
+
+      // Render Overview Section
+      function renderOverview() {
+        const setTxt = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = val;
+        };
+
+        setTxt('overview-dept-count', state.departments.length);
+        setTxt('overview-pos-count', state.positions.length);
+        setTxt('overview-user-count', state.members.length);
+
+        setTxt('nav-badge-departments', state.departments.length);
+        setTxt('nav-badge-positions', state.positions.length);
+        setTxt('nav-badge-users', state.members.length);
+
+        // Summary table
+        const tbody = document.getElementById('overview-dept-tbody');
+        if (tbody) {
+          tbody.innerHTML = state.departments
+            .map((d) => {
+              const count = state.members.filter((m) => m.departmentId === d.id).length;
+              return `
+                <tr class="hover:bg-fawn-surface/60 transition-colors">
+                  <td class="py-3 px-4 font-mono font-bold text-dusk-blue text-xs">${d.code}</td>
+                  <td class="py-3 px-4 font-semibold text-space-indigo">${d.name}</td>
+                  <td class="py-3 px-4 text-text-muted">${count} ${count === 1 ? 'member' : 'members'}</td>
+                  <td class="py-3 px-4">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-fawn-subtle text-space-indigo border border-warm-border">Dedicated</span>
+                  </td>
+                  <td class="py-3 px-4 text-right">
+                    <button type="button" data-action="switch-tab" data-tab="departments" onclick="switchTab('departments')" class="text-xs font-semibold text-dusk-blue hover:text-space-indigo hover:underline cursor-pointer">Manage</button>
+                  </td>
+                </tr>
+              `;
+            })
+            .join('');
+        }
+      }
+
+      // Render Departments Tab
+      function renderDepartments() {
+        const tbody = document.getElementById('departments-table-body');
+        const query = (document.getElementById('dept-search-input')?.value || '')
+          .toLowerCase()
+          .trim();
+
+        const filtered = state.departments.filter(
+          (d) => d.name.toLowerCase().includes(query) || d.code.toLowerCase().includes(query),
+        );
+
+        const countBadge = document.getElementById('dept-count-badge');
+        if (countBadge) {
+          countBadge.textContent = `${filtered.length} ${filtered.length === 1 ? 'department' : 'departments'} listed`;
+        }
+
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-text-muted text-xs">No matching departments found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = filtered
+          .map((d) => {
+            const count = state.members.filter((m) => m.departmentId === d.id).length;
+            return `
+              <tr class="hover:bg-fawn-surface/50 transition-colors">
+                <td class="py-3.5 px-4 font-mono font-bold text-dusk-blue text-xs">${d.code}</td>
+                <td class="py-3.5 px-4 font-semibold text-space-indigo">
+                  <p class="text-xs">${d.name}</p>
+                  <p class="text-[10px] text-text-muted mt-0.5">ID: ${d.id}</p>
+                </td>
+                <td class="py-3.5 px-4 text-text-muted">
+                  <span class="inline-flex items-center gap-1.5 font-medium">
+                    <span class="material-symbols-outlined text-[15px] text-text-muted">person</span>
+                    <span>${count} ${count === 1 ? 'member' : 'members'}</span>
+                  </span>
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>${d.status || 'Active'}</span>
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <div class="inline-flex items-center gap-2">
+                    <button type="button" onclick="openEditDeptModal('${d.id}')" class="px-2.5 py-1 text-xs font-semibold text-space-indigo bg-fawn-subtle hover:bg-fawn-light/60 rounded border border-warm-border transition-colors cursor-pointer">
+                      Edit
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          })
+          .join('');
+      }
+
+      function filterDepartments() {
+        renderDepartments();
+      }
+
+      // Render Positions Tab
+      function renderPositions() {
+        const container = document.getElementById('positions-grid');
+        const query = (document.getElementById('pos-search-input')?.value || '')
+          .toLowerCase()
+          .trim();
+
+        const filtered = state.positions.filter(
+          (p) =>
+            p.title.toLowerCase().includes(query) ||
+            (CLEARANCE_LABELS[p.clearanceLevel]?.name || '').toLowerCase().includes(query),
+        );
+
+        const countBadge = document.getElementById('pos-count-badge');
+        if (countBadge) {
+          countBadge.textContent = `${filtered.length} ${filtered.length === 1 ? 'position' : 'positions'} listed`;
+        }
+
+        if (!container) return;
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<div class="col-span-2 py-8 text-center text-text-muted text-xs bg-white rounded-xl border border-warm-border">No matching positions found.</div>`;
+          return;
+        }
+
+        container.innerHTML = filtered
+          .map((p) => {
+            const clr = CLEARANCE_LABELS[p.clearanceLevel] || {
+              name: `Level ${p.clearanceLevel}`,
+              badge: 'bg-gray-100 text-gray-800 border-gray-200',
+            };
+            const memberCount = state.members.filter((m) => m.positionId === p.id).length;
+
+            return `
+              <div class="rounded-2xl bg-white border border-warm-border p-5 shadow-xs flex flex-col justify-between hover:border-fawn/60 transition-all space-y-4">
+                <div>
+                  <div class="flex items-start justify-between gap-3 mb-2">
+                    <div>
+                      <h3 class="text-sm font-bold text-space-indigo">${p.title}</h3>
+                      <span class="text-[10px] font-mono text-text-muted">Scope: ${p.deptScope}</span>
+                    </div>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${clr.badge}">
+                      ${clr.name}
+                    </span>
+                  </div>
+
+                  <!-- Permission Pills -->
+                  <div class="space-y-1 mt-3">
+                    <span class="text-[10px] uppercase font-semibold tracking-wider text-text-muted">Assigned Permissions (${p.permissions.length}):</span>
+                    <div class="flex flex-wrap gap-1.5 pt-1">
+                      ${p.permissions
+                        .map(
+                          (perm) => `
+                            <span class="inline-block px-2 py-0.5 text-[10px] font-mono font-semibold rounded bg-fawn-subtle text-space-indigo border border-warm-border/80">
+                              ${perm}
+                            </span>
+                          `,
+                        )
+                        .join('')}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-3 border-t border-warm-border/60 flex items-center justify-between text-xs text-text-muted">
+                  <span>${memberCount} assigned ${memberCount === 1 ? 'member' : 'members'}</span>
+                  <button type="button" onclick="openEditPosModal('${p.id}')" class="px-2.5 py-1 text-xs font-semibold text-dusk-blue hover:text-space-indigo hover:bg-fawn-subtle rounded border border-warm-border transition-colors cursor-pointer">
+                    Configure
+                  </button>
+                </div>
+              </div>
+            `;
+          })
+          .join('');
+      }
+
+      function filterPositions() {
+        renderPositions();
+      }
+
+      function arraysEqual(a, b) {
+        if (!Array.isArray(a) || !Array.isArray(b)) return false;
+        if (a.length !== b.length) return false;
+        const setA = new Set(a);
+        return b.every((item) => setA.has(item));
+      }
+
+      function getMemberPermissions(m) {
+        if (Array.isArray(m.permissions) && m.permissions.length > 0) {
+          return m.permissions;
+        }
+        const pos = state.positions.find((p) => p.id === m.positionId);
+        return pos?.permissions ? [...pos.permissions] : ['VIEW', 'UPLOAD'];
+      }
+
+      // Render Members Tab
+      function renderMembers() {
+        const tbody = document.getElementById('members-table-body');
+        const deptFilter = document.getElementById('user-dept-filter');
+        const search = (document.getElementById('user-search-input')?.value || '')
+          .toLowerCase()
+          .trim();
+        const selectedDept = deptFilter?.value || 'ALL';
+
+        // Update Department Dropdown in filter
+        if (deptFilter && deptFilter.options.length <= 1) {
+          state.departments.forEach((d) => {
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = `${d.code} - ${d.name}`;
+            deptFilter.appendChild(opt);
+          });
+        }
+
+        const filtered = state.members.filter((m) => {
+          const matchesQuery =
+            m.name.toLowerCase().includes(search) || m.email.toLowerCase().includes(search);
+          const matchesDept = selectedDept === 'ALL' || m.departmentId === selectedDept;
+          return matchesQuery && matchesDept;
+        });
+
+        const countBadge = document.getElementById('user-count-badge');
+        if (countBadge) {
+          countBadge.textContent = `${filtered.length} ${filtered.length === 1 ? 'member' : 'members'} listed`;
+        }
+
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-text-muted text-xs">No matching members found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = filtered
+          .map((m) => {
+            const dept = state.departments.find((d) => d.id === m.departmentId) || {
+              name: 'General',
+              code: 'GEN',
+            };
+            const pos = state.positions.find((p) => p.id === m.positionId) || {
+              title: 'Member',
+              clearanceLevel: 1,
+              permissions: ['VIEW'],
+            };
+            const clr = CLEARANCE_LABELS[pos.clearanceLevel] || {
+              name: `Level ${pos.clearanceLevel}`,
+              badge: 'bg-gray-100 text-gray-800 border-gray-200',
+            };
+            const memberPerms = getMemberPermissions(m);
+            const isCustom = !arraysEqual(memberPerms, pos.permissions || []);
+            const initials =
+              m.name
+                .split(' ')
+                .filter(Boolean)
+                .map((n) => n[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase() || 'MB';
+
+            return `
+              <tr class="hover:bg-fawn-surface/50 transition-colors">
+                <td class="py-3.5 px-4 font-semibold text-space-indigo">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-full bg-space-indigo/10 border border-warm-border text-space-indigo flex items-center justify-center font-bold text-[11px] shrink-0">
+                      ${initials}
+                    </div>
+                    <span class="text-xs">${m.name}</span>
+                  </div>
+                </td>
+                <td class="py-3.5 px-4 text-xs font-mono text-text-muted">${m.email}</td>
+                <td class="py-3.5 px-4 text-xs font-medium text-space-indigo">
+                  <span class="inline-flex items-center gap-1.5">
+                    <span class="font-mono text-[10px] font-bold text-dusk-blue">${dept.code}</span>
+                    <span class="truncate max-w-[140px]">${dept.name}</span>
+                  </span>
+                </td>
+                <td class="py-3.5 px-4">
+                  <div class="flex flex-col gap-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="text-xs font-semibold text-space-indigo">${pos.title}</span>
+                      <span class="inline-block w-max px-1.5 py-0.2 rounded text-[9px] font-bold border ${clr.badge}">
+                        Level ${pos.clearanceLevel} Clearance
+                      </span>
+                      ${
+                        isCustom
+                          ? '<span class="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-800 border border-amber-200">Custom Perms</span>'
+                          : ''
+                      }
+                    </div>
+                    <div class="flex flex-wrap gap-1 pt-0.5">
+                      ${memberPerms
+                        .map(
+                          (perm) =>
+                            `<span class="inline-block px-1.5 py-0.2 text-[9px] font-mono font-semibold rounded bg-fawn-subtle text-space-indigo border border-warm-border/80">${perm}</span>`,
+                        )
+                        .join('')}
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                    m.isActive
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                      : 'bg-red-50 text-red-700 border border-red-200'
+                  }">
+                    <span class="w-1.5 h-1.5 rounded-full ${m.isActive ? 'bg-emerald-500' : 'bg-red-500'}"></span>
+                    <span>${m.isActive ? 'Active' : 'Inactive'}</span>
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <div class="inline-flex items-center justify-end gap-1.5">
+                    <button
+                      type="button"
+                      data-action="edit-member"
+                      data-member-id="${m.id}"
+                      onclick="openEditMemberModal('${m.id}')"
+                      class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-space-indigo bg-fawn-subtle hover:bg-fawn-light/60 rounded-md border border-warm-border transition-colors cursor-pointer"
+                      title="Edit Member Profile & Granular Permissions"
+                    >
+                      <span class="material-symbols-outlined text-[14px] text-fawn">tune</span>
+                      <span>Edit Permissions</span>
+                    </button>
+                    <button
+                      type="button"
+                      onclick="toggleMemberActive('${m.id}')"
+                      class="px-2 py-1 text-[11px] font-medium rounded-md border border-warm-border text-text-muted hover:text-space-indigo hover:bg-fawn-subtle transition-colors cursor-pointer"
+                    >
+                      ${m.isActive ? 'Deactivate' : 'Activate'}
+                    </button>
+                    <button
+                      type="button"
+                      data-action="delete-member"
+                      data-member-id="${m.id}"
+                      onclick="openDeleteMemberModal('${m.id}')"
+                      class="p-1 text-text-muted hover:text-red-600 rounded-md hover:bg-red-50 transition-colors cursor-pointer"
+                      title="Delete Member"
+                    >
+                      <span class="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          })
+          .join('');
+      }
+
+      function filterMembers() {
+        renderMembers();
+      }
+
+      async function toggleMemberActive(memberId) {
+        const member = state.members.find((m) => m.id === memberId);
+        if (!member) return;
+        const newStatus = !member.isActive;
+        try {
+          const token = localStorage.getItem('dv_token');
+          if (token) {
+            const res = await fetch(`/api/v1/users/${memberId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ isActive: newStatus }),
+            });
+            if (!res.ok) {
+              const data = await res.json();
+              if (window.DocuVaultToast) {
+                DocuVaultToast.error(
+                  data?.error?.message || 'Failed to update member status',
+                  'Error',
+                );
+              }
+              return;
+            }
+          }
+          member.isActive = newStatus;
+          if (window.DocuVaultToast) {
+            DocuVaultToast.info(
+              `Member status updated to ${member.isActive ? 'Active' : 'Inactive'}.`,
+              'Member Updated',
+            );
+          }
+          renderMembers();
+        } catch (err) {
+          console.error('Toggle active error:', err);
+        }
+      }
+
+      // Member Edit & Permissions Management
+      let pendingDeleteMemberId = null;
+
+      function openEditMemberModal(memberId) {
+        const member = state.members.find((m) => m.id === memberId);
+        if (!member) return;
+
+        const idInp = document.getElementById('edit-member-id');
+        const nameInp = document.getElementById('edit-member-name-input');
+        const emailInp = document.getElementById('edit-member-email-input');
+        const deptSelect = document.getElementById('edit-member-dept-select');
+        const posSelect = document.getElementById('edit-member-pos-select');
+
+        if (idInp) idInp.value = member.id;
+        if (nameInp) nameInp.value = member.name;
+        if (emailInp) emailInp.value = member.email;
+
+        // Populate department dropdown
+        if (deptSelect) {
+          deptSelect.innerHTML = state.departments
+            .map(
+              (d) =>
+                `<option value="${d.id}" ${d.id === member.departmentId ? 'selected' : ''}>${d.code} - ${d.name}</option>`,
+            )
+            .join('');
+        }
+
+        // Populate position dropdown
+        if (posSelect) {
+          posSelect.innerHTML = state.positions
+            .map(
+              (p) =>
+                `<option value="${p.id}" ${p.id === member.positionId ? 'selected' : ''}>${p.title} (Level ${p.clearanceLevel})</option>`,
+            )
+            .join('');
+        }
+
+        // Set permission checkboxes
+        const activePerms = getMemberPermissions(member);
+        const allPerms = ['VIEW', 'UPLOAD', 'EDIT', 'SIGN', 'SHARE', 'AUDIT', 'MANAGE_ORG'];
+        allPerms.forEach((code) => {
+          const chk = document.getElementById(`edit-perm-${code}`);
+          if (chk) chk.checked = activePerms.includes(code);
+        });
+
+        // Update clearance and scope labels
+        const pos = state.positions.find((p) => p.id === member.positionId);
+        updateEditMemberLabels(pos);
+
+        // Check if custom
+        const isCustom = pos ? !arraysEqual(activePerms, pos.permissions || []) : false;
+        const customBadge = document.getElementById('edit-member-custom-badge');
+        if (customBadge) {
+          customBadge.style.display = isCustom ? 'inline-block' : 'none';
+          customBadge.classList.toggle('hidden', !isCustom);
+        }
+
+        clearInputErrors(
+          ['edit-member-name-input', 'edit-member-email-input'],
+          ['edit-member-name-error', 'edit-member-email-error'],
+        );
+
+        openModal('modal-edit-member');
+        setTimeout(() => nameInp?.focus(), 50);
+      }
+
+      function updateEditMemberLabels(pos) {
+        const clrLabel = document.getElementById('edit-member-pos-clearance-label');
+        const scopeLabel = document.getElementById('edit-member-pos-scope-label');
+        if (pos) {
+          const clr = CLEARANCE_LABELS[pos.clearanceLevel] || {
+            name: `Level ${pos.clearanceLevel}`,
+          };
+          if (clrLabel) clrLabel.textContent = clr.name;
+          if (scopeLabel) scopeLabel.textContent = `Scope: ${pos.deptScope} (${pos.title})`;
+        }
+      }
+
+      function onEditMemberPosChange() {
+        const posId = document.getElementById('edit-member-pos-select')?.value;
+        const pos = state.positions.find((p) => p.id === posId);
+        if (!pos) return;
+
+        updateEditMemberLabels(pos);
+
+        // Update checkboxes to position defaults
+        const allPerms = ['VIEW', 'UPLOAD', 'EDIT', 'SIGN', 'SHARE', 'AUDIT', 'MANAGE_ORG'];
+        allPerms.forEach((code) => {
+          const chk = document.getElementById(`edit-perm-${code}`);
+          if (chk) chk.checked = (pos.permissions || []).includes(code);
+        });
+
+        const customBadge = document.getElementById('edit-member-custom-badge');
+        if (customBadge) {
+          customBadge.style.display = 'none';
+          customBadge.classList.add('hidden');
+        }
+      }
+
+      function resetEditMemberPermissions() {
+        const posId = document.getElementById('edit-member-pos-select')?.value;
+        const pos = state.positions.find((p) => p.id === posId);
+        if (!pos) return;
+
+        const allPerms = ['VIEW', 'UPLOAD', 'EDIT', 'SIGN', 'SHARE', 'AUDIT', 'MANAGE_ORG'];
+        allPerms.forEach((code) => {
+          const chk = document.getElementById(`edit-perm-${code}`);
+          if (chk) chk.checked = (pos.permissions || []).includes(code);
+        });
+
+        const customBadge = document.getElementById('edit-member-custom-badge');
+        if (customBadge) {
+          customBadge.style.display = 'none';
+          customBadge.classList.add('hidden');
+        }
+
+        if (window.DocuVaultToast) {
+          DocuVaultToast.info('Permissions reset to position defaults.', 'Permissions Reset');
+        }
+      }
+
+      function onEditPermCheckboxChange() {
+        const posId = document.getElementById('edit-member-pos-select')?.value;
+        const pos = state.positions.find((p) => p.id === posId);
+        if (!pos) return;
+
+        const currentChecked = [];
+        ['VIEW', 'UPLOAD', 'EDIT', 'SIGN', 'SHARE', 'AUDIT', 'MANAGE_ORG'].forEach((code) => {
+          const chk = document.getElementById(`edit-perm-${code}`);
+          if (chk && chk.checked) currentChecked.push(code);
+        });
+
+        const isCustom = !arraysEqual(currentChecked, pos.permissions || []);
+        const customBadge = document.getElementById('edit-member-custom-badge');
+        if (customBadge) {
+          customBadge.style.display = isCustom ? 'inline-block' : 'none';
+          customBadge.classList.toggle('hidden', !isCustom);
+        }
+      }
+
+      function handleSaveEditMember(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const id = document.getElementById('edit-member-id')?.value;
+        const nameInput = document.getElementById('edit-member-name-input');
+        const emailInput = document.getElementById('edit-member-email-input');
+        const deptId = document.getElementById('edit-member-dept-select')?.value;
+        const posId = document.getElementById('edit-member-pos-select')?.value;
+
+        const name = (nameInput?.value || '').trim();
+        const email = (emailInput?.value || '').trim().toLowerCase();
+
+        let hasError = false;
+        if (!name) {
+          showInputError(nameInput, 'edit-member-name-error', 'Member full name is required.');
+          hasError = true;
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showInputError(
+            emailInput,
+            'edit-member-email-error',
+            'A valid work email address is required.',
+          );
+          hasError = true;
+        }
+
+        if (hasError) return false;
+
+        const submitBtn = document.getElementById('save-edit-member-btn');
+        const originalBtnText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Saving...';
+        }
+
+        (async () => {
+          try {
+            const token = localStorage.getItem('dv_token');
+            if (token) {
+              const res = await fetch(`/api/v1/users/${id}`, {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  fullName: name,
+                  departmentId: deptId,
+                  positionId: posId,
+                }),
+              });
+
+              const data = await res.json();
+              if (!res.ok) {
+                const errorMsg = data?.error?.message || data?.message || 'Failed to update member';
+                if (window.DocuVaultToast) DocuVaultToast.error(errorMsg, 'Update Failed');
+                return false;
+              }
+            }
+
+            const member = state.members.find((m) => m.id === id);
+            if (member) {
+              const selectedPerms = [];
+              ['VIEW', 'UPLOAD', 'EDIT', 'SIGN', 'SHARE', 'AUDIT', 'MANAGE_ORG'].forEach((code) => {
+                const chk = document.getElementById(`edit-perm-${code}`);
+                if (chk && chk.checked) selectedPerms.push(code);
+              });
+              member.name = name;
+              member.email = email;
+              member.departmentId = deptId;
+              member.positionId = posId;
+              member.permissions = selectedPerms;
+            }
+
+            closeModal('modal-edit-member');
+            await reloadUsersFromBackend();
+            renderAll();
+
+            if (window.DocuVaultToast) {
+              DocuVaultToast.success(
+                `Member "${name}" details updated successfully.`,
+                'Permissions Saved',
+              );
+            }
+          } catch (err) {
+            console.error('Member update error:', err);
+            if (window.DocuVaultToast) {
+              DocuVaultToast.error('Network error while updating member.', 'Error');
+            }
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalBtnText;
+            }
+          }
+        })();
+
+        return false;
+      }
+
+      function openDeleteMemberModal(memberId) {
+        const member = state.members.find((m) => m.id === memberId);
+        if (!member) return;
+        pendingDeleteMemberId = memberId;
+        const msg = document.getElementById('delete-member-confirm-msg');
+        if (msg) {
+          msg.textContent = `Are you sure you want to remove ${member.name} (${member.email}) from your organisation?`;
+        }
+        openModal('modal-delete-member');
+      }
+
+      function confirmDeleteMember() {
+        if (!pendingDeleteMemberId) return;
+        const memberId = pendingDeleteMemberId;
+        const member = state.members.find((m) => m.id === memberId);
+        const memberName = member ? member.name : 'Member';
+
+        (async () => {
+          try {
+            const token = localStorage.getItem('dv_token');
+            if (token) {
+              const res = await fetch(`/api/v1/users/${memberId}`, {
+                method: 'DELETE',
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              const data = await res.json();
+              if (!res.ok) {
+                const errorMsg = data?.error?.message || data?.message || 'Failed to delete member';
+                if (window.DocuVaultToast) DocuVaultToast.error(errorMsg, 'Deletion Failed');
+                return;
+              }
+            }
+
+            const idx = state.members.findIndex((m) => m.id === memberId);
+            if (idx !== -1) {
+              state.members.splice(idx, 1);
+            }
+
+            if (window.DocuVaultToast) {
+              DocuVaultToast.info(
+                `Member "${memberName}" has been removed from the organisation.`,
+                'Member Deleted',
+              );
+            }
+            pendingDeleteMemberId = null;
+            closeModal('modal-delete-member');
+            await reloadUsersFromBackend();
+            renderAll();
+          } catch (err) {
+            console.error('Member deletion error:', err);
+            if (window.DocuVaultToast) {
+              DocuVaultToast.error('Network error during member deletion.', 'Error');
+            }
+          }
+        })();
+      }
+
+      function deleteMember(memberId) {
+        openDeleteMemberModal(memberId);
+      }
+
+      // 1. Department Modal
+      let editingDeptId = null;
+
+      function openCreateDeptModal() {
+        editingDeptId = null;
+        const titleEl = document.getElementById('dept-modal-title');
+        if (titleEl) titleEl.textContent = 'Create New Department';
+        const nameInp = document.getElementById('dept-name-input');
+        const codeInp = document.getElementById('dept-code-input');
+        if (nameInp) nameInp.value = '';
+        if (codeInp) codeInp.value = '';
+        clearInputErrors(
+          ['dept-name-input', 'dept-code-input'],
+          ['dept-name-error', 'dept-code-error'],
+        );
+        openModal('modal-dept');
+        setTimeout(() => nameInp?.focus(), 50);
+      }
+
+      function openEditDeptModal(deptId) {
+        const dept = state.departments.find((d) => d.id === deptId);
+        if (!dept) return;
+        editingDeptId = deptId;
+        const titleEl = document.getElementById('dept-modal-title');
+        if (titleEl) titleEl.textContent = 'Edit Department';
+        const nameInp = document.getElementById('dept-name-input');
+        const codeInp = document.getElementById('dept-code-input');
+        if (nameInp) nameInp.value = dept.name;
+        if (codeInp) codeInp.value = dept.code;
+        clearInputErrors(
+          ['dept-name-input', 'dept-code-input'],
+          ['dept-name-error', 'dept-code-error'],
+        );
+        openModal('modal-dept');
+        setTimeout(() => nameInp?.focus(), 50);
+      }
+
+      function handleSaveDepartment(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const nameInput = document.getElementById('dept-name-input');
+        const codeInput = document.getElementById('dept-code-input');
+        const name = (nameInput?.value || '').trim();
+        const code = (codeInput?.value || '').trim().toUpperCase();
+
+        let hasError = false;
+        if (!name) {
+          showInputError(nameInput, 'dept-name-error', 'Department name is required.');
+          hasError = true;
+        }
+        if (!code) {
+          showInputError(codeInput, 'dept-code-error', 'Department code is required.');
+          hasError = true;
+        }
+
+        if (hasError) return false;
+
+        const submitBtn = document.getElementById('save-dept-btn');
+        const originalBtnText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Saving...';
+        }
+
+        (async () => {
+          try {
+            const token = localStorage.getItem('dv_token');
+            if (token) {
+              const url = editingDeptId
+                ? `/api/v1/departments/${editingDeptId}`
+                : '/api/v1/departments';
+              const method = editingDeptId ? 'PATCH' : 'POST';
+              const res = await fetch(url, {
+                method,
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ name, code }),
+              });
+              const data = await res.json();
+              if (!res.ok) {
+                const errorMsg =
+                  data?.error?.message || data?.message || 'Failed to save department';
+                if (res.status === 409) {
+                  showInputError(codeInput, 'dept-code-error', errorMsg);
+                } else {
+                  if (window.DocuVaultToast) DocuVaultToast.error(errorMsg, 'Error');
+                }
+                return;
+              }
+            } else {
+              if (editingDeptId) {
+                const dept = state.departments.find((d) => d.id === editingDeptId);
+                if (dept) {
+                  dept.name = name;
+                  dept.code = code;
+                }
+              } else {
+                state.departments.push({
+                  id: `dept-${Date.now()}`,
+                  code,
+                  name,
+                  membersCount: 0,
+                  status: 'Active',
+                });
+              }
+            }
+
+            closeModal('modal-dept');
+            await reloadDepartmentsFromBackend();
+            renderAll();
+            if (window.DocuVaultToast) {
+              DocuVaultToast.success(
+                `Department "${name}" (${code}) saved successfully.`,
+                'Department Saved',
+              );
+            }
+          } catch (err) {
+            console.error('Save department error:', err);
+            if (window.DocuVaultToast)
+              DocuVaultToast.error('Network error saving department', 'Error');
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalBtnText;
+            }
+          }
+        })();
+
+        return false;
+      }
+
+      // 2. Position Modal
+      let editingPosId = null;
+
+      function openCreatePosModal() {
+        editingPosId = null;
+        const titleEl = document.getElementById('pos-modal-title');
+        if (titleEl) titleEl.textContent = 'Create Position & Set Permissions';
+        const titleInput = document.getElementById('pos-title-input');
+        if (titleInput) titleInput.value = '';
+        const clrSelect = document.getElementById('pos-clearance-select');
+        if (clrSelect) clrSelect.value = '2';
+        const scopeSelect = document.getElementById('pos-scope-select');
+        if (scopeSelect) scopeSelect.value = 'OWN_DEPT';
+
+        ['VIEW', 'UPLOAD', 'EDIT', 'SIGN', 'SHARE', 'AUDIT', 'MANAGE_ORG'].forEach((code) => {
+          const chk = document.getElementById(`perm-${code}`);
+          if (chk) chk.checked = ['VIEW', 'UPLOAD'].includes(code);
+        });
+
+        clearInputErrors(['pos-title-input'], ['pos-title-error']);
+        openModal('modal-pos');
+        setTimeout(() => titleInput?.focus(), 50);
+      }
+
+      function openEditPosModal(posId) {
+        const pos = state.positions.find((p) => p.id === posId);
+        if (!pos) return;
+        editingPosId = posId;
+        const titleEl = document.getElementById('pos-modal-title');
+        if (titleEl) titleEl.textContent = 'Configure Position & Permissions';
+        const titleInput = document.getElementById('pos-title-input');
+        if (titleInput) titleInput.value = pos.title;
+        const clrSelect = document.getElementById('pos-clearance-select');
+        if (clrSelect) clrSelect.value = pos.clearanceLevel;
+        const scopeSelect = document.getElementById('pos-scope-select');
+        if (scopeSelect) scopeSelect.value = pos.deptScope;
+
+        ['VIEW', 'UPLOAD', 'EDIT', 'SIGN', 'SHARE', 'AUDIT', 'MANAGE_ORG'].forEach((code) => {
+          const chk = document.getElementById(`perm-${code}`);
+          if (chk) chk.checked = pos.permissions.includes(code);
+        });
+
+        clearInputErrors(['pos-title-input'], ['pos-title-error']);
+        openModal('modal-pos');
+        setTimeout(() => titleInput?.focus(), 50);
+      }
+
+      function handleSavePosition(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const titleInput = document.getElementById('pos-title-input');
+        const title = (titleInput?.value || '').trim();
+        const clearance = parseInt(
+          document.getElementById('pos-clearance-select')?.value || '2',
+          10,
+        );
+        const scope = document.getElementById('pos-scope-select')?.value || 'OWN_DEPT';
+
+        if (!title) {
+          showInputError(titleInput, 'pos-title-error', 'Position title is required.');
+          return false;
+        }
+
+        const selectedPerms = [];
+        ['VIEW', 'UPLOAD', 'EDIT', 'SIGN', 'SHARE', 'AUDIT', 'MANAGE_ORG'].forEach((code) => {
+          const chk = document.getElementById(`perm-${code}`);
+          if (chk && chk.checked) selectedPerms.push(code);
+        });
+
+        const submitBtn = document.getElementById('save-pos-btn');
+        const originalBtnText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Saving...';
+        }
+
+        (async () => {
+          try {
+            const token = localStorage.getItem('dv_token');
+            if (token) {
+              const url = editingPosId ? `/api/v1/positions/${editingPosId}` : '/api/v1/positions';
+              const method = editingPosId ? 'PATCH' : 'POST';
+              const res = await fetch(url, {
+                method,
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  title,
+                  clearanceLevel: clearance,
+                  deptScope: scope,
+                  permissions: selectedPerms,
+                }),
+              });
+              const data = await res.json();
+              if (!res.ok) {
+                const errorMsg = data?.error?.message || data?.message || 'Failed to save position';
+                if (res.status === 409) {
+                  showInputError(titleInput, 'pos-title-error', errorMsg);
+                } else {
+                  if (window.DocuVaultToast) DocuVaultToast.error(errorMsg, 'Error');
+                }
+                return;
+              }
+            } else {
+              if (editingPosId) {
+                const pos = state.positions.find((p) => p.id === editingPosId);
+                if (pos) {
+                  pos.title = title;
+                  pos.clearanceLevel = clearance;
+                  pos.deptScope = scope;
+                  pos.permissions = selectedPerms;
+                }
+              } else {
+                state.positions.push({
+                  id: `pos-${Date.now()}`,
+                  title,
+                  clearanceLevel: clearance,
+                  deptScope: scope,
+                  permissions: selectedPerms,
+                });
+              }
+            }
+
+            closeModal('modal-pos');
+            await reloadPositionsFromBackend();
+            renderAll();
+            if (window.DocuVaultToast) {
+              DocuVaultToast.success(`Position "${title}" saved successfully.`, 'Position Saved');
+            }
+          } catch (err) {
+            console.error('Save position error:', err);
+            if (window.DocuVaultToast)
+              DocuVaultToast.error('Network error saving position', 'Error');
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalBtnText;
+            }
+          }
+        })();
+
+        return false;
+      }
+
+      // 3. Member Modal
+      function openAddMemberModal() {
+        const nameInput = document.getElementById('member-name-input');
+        const emailInput = document.getElementById('member-email-input');
+        const pwdInput = document.getElementById('member-password-input');
+        if (nameInput) nameInput.value = '';
+        if (emailInput) emailInput.value = '';
+        if (pwdInput) pwdInput.value = 'Temporary123!';
+
+        // Populate department dropdown
+        const deptSelect = document.getElementById('member-dept-select');
+        if (deptSelect) {
+          deptSelect.innerHTML = state.departments
+            .map((d) => `<option value="${d.id}">${d.code} - ${d.name}</option>`)
+            .join('');
+        }
+
+        // Populate position dropdown
+        const posSelect = document.getElementById('member-pos-select');
+        if (posSelect) {
+          posSelect.innerHTML = state.positions
+            .map((p) => `<option value="${p.id}">${p.title} (Level ${p.clearanceLevel})</option>`)
+            .join('');
+        }
+
+        clearInputErrors(
+          ['member-name-input', 'member-email-input', 'member-password-input'],
+          ['member-name-error', 'member-email-error', 'member-password-error'],
+        );
+        openModal('modal-member');
+        setTimeout(() => nameInput?.focus(), 50);
+      }
+
+      function toggleMemberPassword() {
+        const pwd = document.getElementById('member-password-input');
+        const icon = document.getElementById('member-pwd-icon');
+        if (!pwd || !icon) return;
+        if (pwd.type === 'password') {
+          pwd.type = 'text';
+          icon.textContent = 'visibility_off';
+        } else {
+          pwd.type = 'password';
+          icon.textContent = 'visibility';
+        }
+      }
+
+      function handleSaveMember(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const nameInput = document.getElementById('member-name-input');
+        const emailInput = document.getElementById('member-email-input');
+        const pwdInput = document.getElementById('member-password-input');
+        const deptId = document.getElementById('member-dept-select')?.value;
+        const posId = document.getElementById('member-pos-select')?.value;
+
+        const name = (nameInput?.value || '').trim();
+        const email = (emailInput?.value || '').trim().toLowerCase();
+        const pwd = pwdInput?.value || '';
+
+        let hasError = false;
+        if (!name) {
+          showInputError(nameInput, 'member-name-error', 'Member full name is required.');
+          hasError = true;
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showInputError(
+            emailInput,
+            'member-email-error',
+            'A valid work email address is required.',
+          );
+          hasError = true;
+        }
+        if (!pwd || pwd.length < 8) {
+          showInputError(
+            pwdInput,
+            'member-password-error',
+            'Password must be at least 8 characters.',
+          );
+          hasError = true;
+        }
+
+        if (hasError) return false;
+
+        const submitBtn = document.getElementById('save-member-btn');
+        const originalBtnText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Enrolling...';
+        }
+
+        (async () => {
+          try {
+            const token = localStorage.getItem('dv_token');
+            if (token) {
+              const res = await fetch('/api/v1/users', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  fullName: name,
+                  email,
+                  password: pwd,
+                  departmentId: deptId,
+                  positionId: posId,
+                }),
+              });
+
+              const data = await res.json();
+              if (!res.ok) {
+                const errorMsg = data?.error?.message || data?.message || 'Failed to enroll member';
+                if (res.status === 409) {
+                  showInputError(emailInput, 'member-email-error', errorMsg);
+                } else {
+                  if (window.DocuVaultToast) {
+                    DocuVaultToast.error(errorMsg, 'Enrollment Failed');
+                  }
+                }
+                return;
+              }
+            } else {
+              const pos = state.positions.find((p) => p.id === posId);
+              state.members.push({
+                id: `user-${Date.now()}`,
+                name,
+                email,
+                departmentId: deptId,
+                positionId: posId,
+                permissions: pos?.permissions ? [...pos.permissions] : ['VIEW', 'UPLOAD'],
+                isActive: true,
+              });
+            }
+
+            if (window.DocuVaultToast) {
+              DocuVaultToast.success(
+                `Member "${name}" successfully enrolled in organisation.`,
+                'Member Enrolled',
+              );
+            }
+
+            closeModal('modal-member');
+            await reloadUsersFromBackend();
+            renderAll();
+          } catch (err) {
+            console.error('Member enrollment error:', err);
+            if (window.DocuVaultToast) {
+              DocuVaultToast.error('Network error during enrollment. Please try again.', 'Error');
+            }
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalBtnText;
+            }
+          }
+        })();
+
+        return false;
+      }
+
+      // Validation Error Utilities
+      function showInputError(input, errorId, message) {
+        if (input) input.classList.add('input-error');
+        const err = document.getElementById(errorId);
+        if (err) {
+          err.textContent = message;
+          err.classList.remove('hidden');
+          err.style.display = 'block';
+        }
+      }
+
+      function clearInputErrors(inputIds, errorIds) {
+        inputIds.forEach((id) => {
+          const input = document.getElementById(id);
+          if (input) input.classList.remove('input-error');
+        });
+        errorIds.forEach((id) => {
+          const err = document.getElementById(id);
+          if (err) {
+            err.textContent = '';
+            err.classList.add('hidden');
+            err.style.display = 'none';
+          }
+        });
+      }
+
+      // Copy Tenant ID
+      function copyTenantId() {
+        const id = state.organization.id;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(id).then(() => {
+            if (window.DocuVaultToast)
+              DocuVaultToast.info('Tenant ID copied to clipboard.', 'Copied');
+          });
+        }
+      }
+
+      // Logout
+      function handleLogout() {
+        localStorage.removeItem('dv_token');
+        localStorage.removeItem('dv_user');
+        if (window.DocuVaultToast) {
+          DocuVaultToast.info('Signing out of secure enclave...', 'Signed Out');
+        }
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 400);
+      }
+
+      // Expose all functions on window for inline handlers & external callers
+      window.switchTab = switchTab;
+      window.openModal = openModal;
+      window.closeModal = closeModal;
+      window.openCreateDeptModal = openCreateDeptModal;
+      window.openEditDeptModal = openEditDeptModal;
+      window.openCreatePosModal = openCreatePosModal;
+      window.openEditPosModal = openEditPosModal;
+      window.openAddMemberModal = openAddMemberModal;
+      window.openEditMemberModal = openEditMemberModal;
+      window.handleSaveEditMember = handleSaveEditMember;
+      window.onEditMemberPosChange = onEditMemberPosChange;
+      window.resetEditMemberPermissions = resetEditMemberPermissions;
+      window.onEditPermCheckboxChange = onEditPermCheckboxChange;
+      window.openDeleteMemberModal = openDeleteMemberModal;
+      window.confirmDeleteMember = confirmDeleteMember;
+      window.deleteMember = deleteMember;
+      window.toggleMemberPassword = toggleMemberPassword;
+      window.toggleMemberActive = toggleMemberActive;
+      window.toggleUserDropdown = toggleUserDropdown;
+      window.filterDepartments = filterDepartments;
+      window.filterPositions = filterPositions;
+      window.filterMembers = filterMembers;
+      window.handleSaveDepartment = handleSaveDepartment;
+      window.handleSavePosition = handleSavePosition;
+      window.handleSaveMember = handleSaveMember;
+      window.handleLogout = handleLogout;
+      window.copyTenantId = copyTenantId;
+      window.openMobileSidebar = openMobileSidebar;
+      window.closeMobileSidebar = closeMobileSidebar;
+
+      // Delegated click listener for bulletproof click handling
+      document.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+        const action = target.getAttribute('data-action');
+        if (action === 'switch-tab') {
+          const tab = target.getAttribute('data-tab');
+          if (tab) switchTab(tab);
+        } else if (action === 'create-dept') {
+          openCreateDeptModal();
+        } else if (action === 'create-pos') {
+          openCreatePosModal();
+        } else if (action === 'add-member') {
+          openAddMemberModal();
+        } else if (action === 'edit-member') {
+          const memberId = target.getAttribute('data-member-id');
+          if (memberId) openEditMemberModal(memberId);
+        } else if (action === 'delete-member') {
+          const memberId = target.getAttribute('data-member-id');
+          if (memberId) openDeleteMemberModal(memberId);
+        } else if (action === 'logout') {
+          handleLogout();
+        }
+      });
+
+      // Attach direct event listeners
+      function initDashboard() {
+        // Mobile Sidebar toggles
+        document
+          .getElementById('open-mobile-sidebar-btn')
+          ?.addEventListener('click', openMobileSidebar);
+        document
+          .getElementById('close-mobile-sidebar-btn')
+          ?.addEventListener('click', closeMobileSidebar);
+        document.getElementById('mobile-backdrop')?.addEventListener('click', closeMobileSidebar);
+
+        // Sidebar Navigation Buttons
+        document
+          .getElementById('nav-btn-overview')
+          ?.addEventListener('click', () => switchTab('overview'));
+        document
+          .getElementById('nav-btn-departments')
+          ?.addEventListener('click', () => switchTab('departments'));
+        document
+          .getElementById('nav-btn-positions')
+          ?.addEventListener('click', () => switchTab('positions'));
+        document
+          .getElementById('nav-btn-users')
+          ?.addEventListener('click', () => switchTab('users'));
+        document
+          .getElementById('nav-btn-settings')
+          ?.addEventListener('click', () => switchTab('settings'));
+
+        // Quick Action Buttons
+        document
+          .getElementById('quick-create-dept-btn')
+          ?.addEventListener('click', openCreateDeptModal);
+        document
+          .getElementById('quick-create-pos-btn')
+          ?.addEventListener('click', openCreatePosModal);
+        document
+          .getElementById('quick-add-member-btn')
+          ?.addEventListener('click', openAddMemberModal);
+
+        // Tab Action Buttons
+        document
+          .getElementById('tab-create-dept-btn')
+          ?.addEventListener('click', openCreateDeptModal);
+        document
+          .getElementById('tab-create-pos-btn')
+          ?.addEventListener('click', openCreatePosModal);
+        document
+          .getElementById('tab-add-member-btn')
+          ?.addEventListener('click', openAddMemberModal);
+
+        // Modal Close Buttons
+        document
+          .getElementById('close-modal-dept-btn')
+          ?.addEventListener('click', () => closeModal('modal-dept'));
+        document
+          .getElementById('close-modal-pos-btn')
+          ?.addEventListener('click', () => closeModal('modal-pos'));
+        document
+          .getElementById('close-modal-member-btn')
+          ?.addEventListener('click', () => closeModal('modal-member'));
+        document
+          .getElementById('close-modal-edit-member-btn')
+          ?.addEventListener('click', () => closeModal('modal-edit-member'));
+        document
+          .getElementById('close-modal-delete-member-btn')
+          ?.addEventListener('click', () => closeModal('modal-delete-member'));
+
+        // Header and Sidebar Actions
+        document.getElementById('sidebar-signout-btn')?.addEventListener('click', handleLogout);
+
+        loadAdminSession();
+      }
+
+      if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', initDashboard);
+      } else {
+        initDashboard();
+      }
+    </script>
+  </body>
+</html>
