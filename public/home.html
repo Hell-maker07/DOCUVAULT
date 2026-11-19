@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>DOCUVAULT - Home Workspace</title>
+
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS with strict DocuVault brand palette -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              fawn: '#B59778',
+              'fawn-hover': '#A58564',
+              'fawn-light': '#D4C2B0',
+              'fawn-subtle': '#F7F4F0',
+              'fawn-surface': '#F4EFEA',
+              'space-indigo': '#1E2952',
+              'space-indigo-dark': '#151D3B',
+              'space-indigo-light': '#2A3A75',
+              'dusk-blue': '#2E5090',
+              'dusk-blue-subtle': '#EBF0F8',
+              'warm-bg': '#FAF8F5',
+              'warm-surface': '#FFFFFF',
+              'warm-border': '#E5DFD7',
+              'text-primary': '#1E2952',
+              'text-muted': '#6E6A64',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Plus Jakarta Sans', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #faf8f5;
+      }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen flex flex-col bg-warm-bg text-text-primary antialiased">
+    <!-- TOP NAVIGATION BAR -->
+    <header class="bg-white border-b border-warm-border sticky top-0 z-30 shadow-xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <!-- Logo and Brand -->
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-space-indigo flex items-center justify-center text-fawn shadow-xs"
+          >
+            <span class="material-symbols-outlined text-[24px]">shield</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-display font-bold text-lg tracking-tight text-space-indigo"
+                >DOCUVAULT</span
+              >
+              <span
+                class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold rounded-full bg-fawn/15 text-fawn border border-fawn/30 uppercase tracking-wider"
+                >Workspace</span
+              >
+            </div>
+            <p class="text-[10px] font-semibold tracking-wider text-text-muted uppercase">
+              Digital Locker Enclave
+            </p>
+          </div>
+        </div>
+
+        <!-- Right Side Nav Actions -->
+        <div class="flex items-center gap-3">
+          <!-- Organisation Administration Button (Visible ONLY to users with MANAGE_ORG) -->
+          <a
+            href="/dashboard.html"
+            id="nav-admin-dashboard-btn"
+            class="admin-only hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-space-indigo hover:bg-space-indigo-light text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            title="Open Organisation Admin Dashboard"
+          >
+            <span class="material-symbols-outlined text-[16px] text-fawn"
+              >admin_panel_settings</span
+            >
+            <span>Organisation Administration</span>
+          </a>
+
+          <!-- User Details Pill -->
+          <div
+            class="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-fawn-subtle border border-warm-border"
+          >
+            <div
+              id="topbar-user-avatar"
+              class="w-7 h-7 rounded-full bg-fawn text-white font-bold text-xs flex items-center justify-center shadow-xs"
+            >
+              U
+            </div>
+            <div class="flex flex-col text-left">
+              <span id="topbar-user-name" class="text-xs font-bold text-space-indigo leading-tight"
+                >Loading...</span
+              >
+              <span id="topbar-org-name" class="text-[10px] text-text-muted leading-tight"
+                >DocuVault</span
+              >
+            </div>
+          </div>
+
+          <!-- Logout Button -->
+          <button
+            type="button"
+            id="topbar-logout-btn"
+            onclick="handleLogout()"
+            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-warm-border text-xs font-medium text-text-muted hover:text-red-700 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer"
+            title="Sign out of secure enclave"
+          >
+            <span class="material-symbols-outlined text-[16px]">logout</span>
+            <span class="hidden sm:inline">Logout</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN HOME PAGE CONTENT -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
+      <!-- Welcome Hero Card -->
+      <section class="bg-white rounded-2xl border border-warm-border shadow-xs p-6 sm:p-10">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="space-y-3 max-w-2xl">
+            <div class="inline-flex items-center gap-2">
+              <span
+                class="px-3 py-1 rounded-full text-xs font-semibold bg-fawn/15 text-space-indigo border border-fawn/30 flex items-center gap-1.5"
+              >
+                <span class="w-2 h-2 rounded-full bg-fawn animate-pulse"></span>
+                Secure Document Workspace
+              </span>
+              <span
+                id="user-clearance-badge"
+                class="px-2.5 py-0.5 rounded text-[11px] font-bold bg-dusk-blue-subtle text-dusk-blue border border-dusk-blue/20"
+              >
+                Clearance Level 1
+              </span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-space-indigo tracking-tight">
+              Welcome to DocuVault
+            </h1>
+            <p id="welcome-subtext" class="text-sm text-text-muted leading-relaxed">
+              Your digital locker for cryptographically verified document storage, immutable audit
+              logging, and Ed25519 digital signatures.
+            </p>
+          </div>
+
+          <!-- Quick User Badge -->
+          <div
+            class="p-4 rounded-xl bg-warm-bg border border-warm-border/80 flex flex-col gap-1 min-w-[200px]"
+          >
+            <span class="text-[10px] font-bold uppercase tracking-wider text-text-muted"
+              >Authenticated Identity</span
+            >
+            <span id="hero-user-name" class="text-sm font-bold text-space-indigo truncate"
+              >Loading...</span
+            >
+            <span id="hero-user-email" class="text-xs font-mono text-text-muted truncate"
+              >user@docuvault.test</span
+            >
+            <span
+              id="hero-dept-pos"
+              class="text-[11px] font-medium text-dusk-blue truncate pt-1 border-t border-warm-border/60 mt-1"
+              >Member</span
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- Temporary Preparation Notice Card -->
+      <section
+        class="bg-white rounded-2xl border border-warm-border shadow-xs p-8 sm:p-12 text-center relative overflow-hidden"
+      >
+        <!-- Background subtle glow -->
+        <div
+          class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-fawn/10 blur-3xl pointer-events-none"
+        ></div>
+        <div
+          class="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-dusk-blue/5 blur-3xl pointer-events-none"
+        ></div>
+
+        <div class="relative z-10 max-w-xl mx-auto space-y-5">
+          <!-- Vault Lock Illustration (SVG) -->
+          <div
+            class="w-20 h-20 mx-auto rounded-2xl bg-fawn-surface border border-fawn/30 flex items-center justify-center text-fawn shadow-xs"
+          >
+            <svg
+              class="w-10 h-10 text-fawn"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              ></path>
+            </svg>
+          </div>
+
+          <!-- Exact Required Message -->
+          <div class="space-y-2">
+            <span
+              class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-fawn/15 text-space-indigo border border-fawn/20"
+            >
+              Workspace In Preparation
+            </span>
+            <h2 class="text-xl sm:text-2xl font-bold text-space-indigo">
+              Your Vault workspace is being prepared. Document management features will be available
+              soon.
+            </h2>
+          </div>
+
+          <p class="text-xs sm:text-sm text-text-muted leading-relaxed max-w-md mx-auto">
+            DocuVault's full document vault interface — including verified document uploads,
+            versioning, SHA-256 integrity inspection, and tamper-evident audit logs — is currently
+            being developed for Step 10.
+          </p>
+
+          <div class="pt-4 flex flex-wrap items-center justify-center gap-3">
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-warm-bg border border-warm-border text-xs text-text-muted"
+            >
+              <span class="material-symbols-outlined text-[16px] text-fawn">lock</span>
+              <span>Zero-Trust Storage Ready</span>
+            </div>
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-warm-bg border border-warm-border text-xs text-text-muted"
+            >
+              <span class="material-symbols-outlined text-[16px] text-dusk-blue"
+                >verified_user</span
+              >
+              <span>Ed25519 Keys Enrolled</span>
+            </div>
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-warm-bg border border-warm-border text-xs text-text-muted"
+            >
+              <span class="material-symbols-outlined text-[16px] text-space-indigo">database</span>
+              <span>Neon PostgreSQL Backed</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Administrator Navigation Callout (Visible ONLY if user holds MANAGE_ORG) -->
+      <section
+        id="admin-callout-card"
+        class="admin-only hidden bg-gradient-to-r from-space-indigo to-space-indigo-dark rounded-2xl p-6 sm:p-8 text-white shadow-md"
+      >
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div class="space-y-2 max-w-xl">
+            <div
+              class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-bold bg-fawn/20 text-fawn border border-fawn/30 uppercase tracking-wider"
+            >
+              <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+              <span>Administrator Access</span>
+            </div>
+            <h3 class="text-lg font-bold text-white">Organisation Administration</h3>
+            <p class="text-xs sm:text-sm text-white/80 leading-relaxed">
+              You have administrator privileges for
+              <span id="callout-org-name" class="font-bold text-fawn">your organisation</span>.
+              Manage departments, positions, member credentials, and clearance assignments in the
+              administration console.
+            </p>
+          </div>
+          <a
+            href="/dashboard.html"
+            id="admin-dashboard-link-btn"
+            class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-fawn hover:bg-fawn-hover text-white text-xs font-bold shadow-sm transition-all duration-150 shrink-0 cursor-pointer"
+          >
+            <span>Open Organisation Dashboard</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- Details Summary Grid -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Identity Summary -->
+        <div class="bg-white rounded-xl border border-warm-border p-5 space-y-3">
+          <div class="flex items-center gap-2 text-space-indigo font-bold text-sm">
+            <span class="material-symbols-outlined text-[18px] text-fawn">badge</span>
+            <span>Your Profile & Tenancy</span>
+          </div>
+          <dl class="text-xs space-y-2 divide-y divide-warm-border/50">
+            <div class="flex justify-between pt-1">
+              <dt class="text-text-muted">Full Name</dt>
+              <dd id="details-fullname" class="font-semibold text-space-indigo">Loading...</dd>
+            </div>
+            <div class="flex justify-between pt-1.5">
+              <dt class="text-text-muted">Email</dt>
+              <dd id="details-email" class="font-mono text-space-indigo">Loading...</dd>
+            </div>
+            <div class="flex justify-between pt-1.5">
+              <dt class="text-text-muted">Organisation</dt>
+              <dd id="details-org" class="font-semibold text-space-indigo">Loading...</dd>
+            </div>
+            <div class="flex justify-between pt-1.5">
+              <dt class="text-text-muted">Department</dt>
+              <dd id="details-dept" class="font-semibold text-space-indigo">Loading...</dd>
+            </div>
+            <div class="flex justify-between pt-1.5">
+              <dt class="text-text-muted">Position</dt>
+              <dd id="details-pos" class="font-semibold text-space-indigo">Loading...</dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Security & Cryptography -->
+        <div class="bg-white rounded-xl border border-warm-border p-5 space-y-3">
+          <div class="flex items-center gap-2 text-space-indigo font-bold text-sm">
+            <span class="material-symbols-outlined text-[18px] text-dusk-blue">encrypted</span>
+            <span>Cryptographic & Access Controls</span>
+          </div>
+          <dl class="text-xs space-y-2 divide-y divide-warm-border/50">
+            <div class="flex justify-between pt-1">
+              <dt class="text-text-muted">Clearance Level</dt>
+              <dd id="details-clearance" class="font-semibold text-space-indigo">Loading...</dd>
+            </div>
+            <div class="flex justify-between pt-1.5">
+              <dt class="text-text-muted">Access Scope</dt>
+              <dd id="details-scope" class="font-semibold text-space-indigo">Loading...</dd>
+            </div>
+            <div class="flex justify-between pt-1.5">
+              <dt class="text-text-muted">Digital Signing</dt>
+              <dd class="font-semibold text-emerald-700 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Ed25519 Active</span>
+              </dd>
+            </div>
+            <div class="flex justify-between pt-1.5">
+              <dt class="text-text-muted">Audit Traceability</dt>
+              <dd class="font-semibold text-space-indigo">Hash-Chained</dd>
+            </div>
+            <div class="flex justify-between pt-1.5">
+              <dt class="text-text-muted">Account Status</dt>
+              <dd id="details-status" class="font-semibold text-emerald-700">Active</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-warm-border py-4 text-center text-xs text-text-muted">
+      <div class="max-w-7xl mx-auto px-4">
+        DOCUVAULT Digital Locker &bull; Zero-Trust Document Architecture &bull; Step 9 Temporary
+        Workspace
+      </div>
+    </footer>
+
+    <!-- Toast Notification Library -->
+    <script src="/toast.js"></script>
+
+    <!-- Client-side Session Hydration & Navigation Script -->
+    <script>
+      async function loadUserSession() {
+        const token = localStorage.getItem('dv_token');
+        if (!token) {
+          window.location.replace('/login.html');
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/v1/auth/me', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (!res.ok) {
+            localStorage.removeItem('dv_token');
+            localStorage.removeItem('dv_user');
+            window.location.replace('/login.html');
+            return;
+          }
+
+          const body = await res.json();
+          const data = body?.data;
+          if (!data) return;
+
+          const user = data.user || {};
+          const org = data.organization || {};
+          const dept = data.department || {};
+          const pos = data.position || {};
+          const permissions = Array.isArray(data.permissions) ? data.permissions : [];
+
+          // User details
+          const fullName = user.fullName || 'Member';
+          const email = user.email || '';
+          const orgName = org.name || 'DocuVault Organisation';
+          const deptName = dept.name ? `${dept.name} (${dept.code || 'DEPT'})` : 'General';
+          const posTitle = pos.title || 'Member';
+          const clearance = pos.clearanceLevel || 1;
+          const scope = pos.deptScope || 'ORG';
+
+          // Set text content
+          const setTxt = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+          };
+
+          setTxt('topbar-user-name', fullName);
+          setTxt('topbar-org-name', orgName);
+          setTxt('hero-user-name', fullName);
+          setTxt('hero-user-email', email);
+          setTxt('hero-dept-pos', `${posTitle} • ${dept.code || 'DEPT'}`);
+          setTxt('callout-org-name', orgName);
+
+          setTxt('details-fullname', fullName);
+          setTxt('details-email', email);
+          setTxt('details-org', orgName);
+          setTxt('details-dept', deptName);
+          setTxt('details-pos', posTitle);
+          setTxt('details-clearance', `Level ${clearance}`);
+          setTxt('details-scope', scope);
+          setTxt('details-status', user.isActive ? 'Active' : 'Inactive');
+
+          const userBadge = document.getElementById('user-clearance-badge');
+          if (userBadge) userBadge.textContent = `Clearance Level ${clearance}`;
+
+          // Initials
+          const initials =
+            fullName
+              .split(' ')
+              .filter(Boolean)
+              .map((n) => n[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase() || 'U';
+          setTxt('topbar-user-avatar', initials);
+
+          // RBAC Permission Check for Organisation Administration:
+          // If the user holds MANAGE_ORG permission, reveal the administration options.
+          // Normal employees do NOT hold MANAGE_ORG and will never see these options.
+          if (permissions.includes('MANAGE_ORG')) {
+            document.querySelectorAll('.admin-only').forEach((el) => {
+              el.classList.remove('hidden');
+              el.style.display = 'flex';
+            });
+            const callout = document.getElementById('admin-callout-card');
+            if (callout) {
+              callout.classList.remove('hidden');
+              callout.style.display = 'block';
+            }
+          } else {
+            document.querySelectorAll('.admin-only').forEach((el) => {
+              el.classList.add('hidden');
+              el.style.display = 'none';
+            });
+          }
+        } catch (err) {
+          console.error('Session load error:', err);
+        }
+      }
+
+      function handleLogout() {
+        localStorage.removeItem('dv_token');
+        localStorage.removeItem('dv_user');
+        localStorage.removeItem('dv_org');
+        if (window.DocuVaultToast) {
+          DocuVaultToast.info('Signing out of secure enclave...', 'Signed Out');
+        }
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 350);
+      }
+
+      window.addEventListener('DOMContentLoaded', loadUserSession);
+    </script>
+  </body>
+</html>
