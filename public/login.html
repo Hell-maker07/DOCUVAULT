@@ -1,0 +1,1334 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="web_standard" name="shell-type" />
+    <title>DOCUVAULT - Secure Login</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @layer base {
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        body {
+          overscroll-behavior: none;
+        }
+      }
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      @keyframes spinMechanic {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(180deg);
+        }
+      }
+      .rotating-lock {
+        animation: spinMechanic 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      .input-error {
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
+      }
+    </style>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              fawn: '#B59778',
+              'fawn-light': '#E4D9CF',
+              'fawn-surface': '#FAF7F2',
+              'fawn-subtle': '#F5F1EB',
+              'indigo-main': '#1E2952',
+              'indigo-hover': '#2A386D',
+              'dusk-blue': '#2E5090',
+              'warm-gray': '#6E6A64',
+              'warm-border': '#E4D9CF',
+              'warm-bg': '#FAF8F5',
+              'surface-card': '#FFFFFF',
+            },
+            fontFamily: {
+              sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+              inter: ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="bg-warm-bg font-sans text-indigo-main antialiased min-h-screen flex flex-col justify-between selection:bg-fawn/20 selection:text-indigo-main"
+  >
+    <!-- ==================== HEADER ==================== -->
+    <header
+      class="fixed top-0 w-full z-40 bg-surface-card/90 backdrop-blur-md border-b border-warm-border/70 shadow-[0_1px_6px_rgba(30,41,82,0.03)]"
+    >
+      <div class="h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <!-- Brand Logo + Name -->
+        <a class="flex items-center gap-2.5 group" href="/">
+          <div
+            class="w-9 h-9 rounded-lg bg-indigo-main flex items-center justify-center text-white shadow-sm group-hover:bg-indigo-hover transition-colors"
+          >
+            <svg class="w-5 h-5 text-fawn" fill="currentColor" viewbox="0 0 24 24">
+              <path
+                d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-1.5V9a3 3 0 0 0-3-3h-3.79l-.72-1.45A2.25 2.25 0 0 0 8.48 3H4.5A2.25 2.25 0 0 0 2.25 5.25v13.5A2.25 2.25 0 0 0 4.5 21h15Zm-6-10.5h4.5a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5h-4.5a1.5 1.5 0 0 1-1.5-1.5v-6a1.5 1.5 0 0 1 1.5-1.5Zm1.5 3.5a1 1 0 1 0 1.5.866V13.5a.75.75 0 0 0-1.5 0v1.866Z"
+              ></path>
+            </svg>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-bold tracking-tight text-lg text-indigo-main leading-tight"
+              >DOCUVAULT</span
+            >
+            <span
+              class="text-[10px] font-medium tracking-wider text-warm-gray uppercase leading-none"
+              >Digital Locker</span
+            >
+          </div>
+        </a>
+        <!-- Right Utility Actions (Upper Register button removed as requested) -->
+        <div class="flex items-center gap-3 sm:gap-4">
+          <button
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-warm-gray hover:text-indigo-main bg-fawn-surface hover:bg-fawn-subtle border border-warm-border rounded-lg transition-colors"
+            id="replay-intro-btn"
+            title="Replay Opening Sequence"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-[16px] text-fawn">replay</span>
+            <span class="hidden sm:inline">Replay Intro</span>
+          </button>
+          <div
+            class="flex items-center gap-2 px-3 py-1 rounded-full bg-fawn-surface border border-warm-border text-xs text-warm-gray"
+          >
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="font-medium text-indigo-main">Encrypted Enclave</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==================== CINEMATIC 4.5s INTRO OVERLAY ==================== -->
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-fawn-surface/98 backdrop-blur-xl transition-opacity duration-700 select-none"
+      id="intro-overlay"
+    >
+      <!-- Skip Intro Button -->
+      <div class="absolute top-5 right-6 z-20">
+        <button
+          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-surface-card border border-warm-border text-warm-gray hover:text-indigo-main hover:border-fawn shadow-sm transition text-xs font-semibold"
+          id="skip-intro-btn"
+          type="button"
+        >
+          <span>Skip intro</span>
+          <span class="material-symbols-outlined text-sm text-dusk-blue">fast_forward</span>
+        </button>
+      </div>
+      <!-- Intro Stage Container -->
+      <div
+        class="flex flex-col items-center justify-center max-w-md w-full px-6 text-center relative"
+      >
+        <!-- 1. DOCUVAULT Logo Mark (Fades in first) -->
+        <div
+          class="opacity-0 transform translate-y-3 transition-all duration-700 flex flex-col items-center mb-6"
+          id="intro-brand"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl bg-indigo-main flex items-center justify-center text-white shadow-lg mb-3"
+          >
+            <svg class="w-8 h-8 text-fawn" fill="currentColor" viewbox="0 0 24 24">
+              <path
+                d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-1.5V9a3 3 0 0 0-3-3h-3.79l-.72-1.45A2.25 2.25 0 0 0 8.48 3H4.5A2.25 2.25 0 0 0 2.25 5.25v13.5A2.25 2.25 0 0 0 4.5 21h15Zm-6-10.5h4.5a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5h-4.5a1.5 1.5 0 0 1-1.5-1.5v-6a1.5 1.5 0 0 1 1.5-1.5Zm1.5 3.5a1 1 0 1 0 1.5.866V13.5a.75.75 0 0 0-1.5 0v1.866Z"
+              ></path>
+            </svg>
+          </div>
+          <span class="font-bold text-2xl tracking-tight text-indigo-main">DOCUVAULT</span>
+          <span class="text-xs font-medium tracking-wide text-warm-gray mt-0.5"
+            >Secure Document Repository</span
+          >
+        </div>
+        <!-- 2. Digital Locker Stage -->
+        <div
+          class="opacity-0 transform scale-95 transition-all duration-700 relative w-80 h-60 rounded-2xl bg-surface-card border-2 border-warm-border p-4 flex flex-col items-center justify-center overflow-hidden shadow-lg"
+          id="intro-locker-box"
+        >
+          <div
+            class="absolute inset-3 rounded-xl bg-warm-bg border border-warm-border flex flex-col items-center justify-center overflow-hidden"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-tr from-fawn/35 via-fawn/15 to-transparent opacity-0 transition-opacity duration-700 pointer-events-none"
+              id="intro-warm-glow"
+            ></div>
+            <div class="w-full h-full flex flex-col justify-between p-3.5 relative z-0">
+              <div class="flex items-center justify-between border-b border-warm-border/80 pb-2">
+                <div class="flex gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-dusk-blue"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-fawn"></span>
+                </div>
+                <span class="text-[10px] font-mono text-warm-gray tracking-wider">VAULT // 01</span>
+              </div>
+              <!-- Document Dossier that enters into the locker -->
+              <div
+                class="opacity-0 transform translate-x-12 translate-y-4 transition-all duration-800 flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-surface-card border border-warm-border shadow-md w-52 mx-auto"
+                id="intro-dossier"
+              >
+                <div
+                  class="w-8 h-8 rounded-lg bg-indigo-main/10 flex items-center justify-center shrink-0"
+                >
+                  <span class="material-symbols-outlined text-fawn text-lg">folder_shared</span>
+                </div>
+                <div class="flex flex-col text-left truncate">
+                  <span class="text-xs font-bold text-indigo-main truncate">Corporate Dossier</span>
+                  <span class="text-[10px] font-mono text-warm-gray">Protected • 2025</span>
+                </div>
+              </div>
+              <div class="border-t border-warm-border/80 pt-1.5 flex justify-center">
+                <span class="text-[9px] uppercase tracking-wider text-warm-gray font-medium"
+                  >Digital Compartment Ready</span
+                >
+              </div>
+            </div>
+          </div>
+          <!-- Locker Doors (Split in half) -->
+          <div
+            class="absolute top-3 bottom-3 left-3 w-1/2 bg-fawn-surface border-r border-warm-border rounded-l-xl shadow-md transition-transform duration-1000 origin-left z-10 flex items-center justify-end pr-2"
+            id="intro-door-left"
+          >
+            <div class="w-1.5 h-10 rounded-full bg-warm-border"></div>
+          </div>
+          <div
+            class="absolute top-3 bottom-3 right-3 w-1/2 bg-fawn-surface border-l border-warm-border rounded-r-xl shadow-md transition-transform duration-1000 origin-right z-10 flex items-center justify-start pl-2"
+            id="intro-door-right"
+          >
+            <div
+              class="w-7 h-7 rounded-full bg-indigo-main text-fawn flex items-center justify-center shadow transition-all duration-700"
+              id="intro-lock-mechanism"
+            >
+              <span class="material-symbols-outlined text-sm">lock</span>
+            </div>
+          </div>
+        </div>
+        <!-- Progression Caption -->
+        <p
+          class="opacity-0 transition-opacity duration-500 text-xs font-medium text-warm-gray mt-5 h-4"
+          id="intro-caption"
+        >
+          Preparing secure vault environment...
+        </p>
+      </div>
+    </div>
+
+    <!-- ==================== MAIN CONTENT: 40/60 SPLIT ==================== -->
+    <main class="w-full pt-16 flex-1 flex items-center justify-center">
+      <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          <!-- ==================== LEFT COLUMN (40% - Form) ==================== -->
+          <div class="lg:col-span-5 flex flex-col justify-center max-w-md mx-auto w-full">
+            <!-- Brand Badge -->
+            <div class="flex items-center gap-2.5 mb-6">
+              <div
+                class="w-10 h-10 rounded-xl bg-indigo-main flex items-center justify-center text-white shadow-sm"
+              >
+                <svg class="w-6 h-6 text-fawn" fill="currentColor" viewbox="0 0 24 24">
+                  <path
+                    d="M19.5 21a3 3 0 0 0 3-3v-4.5a3 3 0 0 0-3-3h-1.5V9a3 3 0 0 0-3-3h-3.79l-.72-1.45A2.25 2.25 0 0 0 8.48 3H4.5A2.25 2.25 0 0 0 2.25 5.25v13.5A2.25 2.25 0 0 0 4.5 21h15Zm-6-10.5h4.5a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1-1.5 1.5h-4.5a1.5 1.5 0 0 1-1.5-1.5v-6a1.5 1.5 0 0 1 1.5-1.5Zm1.5 3.5a1 1 0 1 0 1.5.866V13.5a.75.75 0 0 0-1.5 0v1.866Z"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <span class="font-bold text-xl tracking-tight text-indigo-main">DOCUVAULT</span>
+                <p class="text-[11px] font-medium text-warm-gray leading-none">
+                  Enterprise Document Locker
+                </p>
+              </div>
+            </div>
+
+            <!-- Headings -->
+            <div class="mb-6">
+              <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-indigo-main mb-1.5">
+                Welcome Back
+              </h1>
+              <p class="text-sm font-normal text-warm-gray">
+                Sign in to access your secure digital document locker.
+              </p>
+            </div>
+
+            <!-- Form Element -->
+            <form
+              class="space-y-4"
+              id="docuvault-auth-form"
+              method="POST"
+              action="javascript:void(0);"
+              onsubmit="
+                event.preventDefault();
+                handleFormSubmit(event);
+                return false;
+              "
+              novalidate
+            >
+              <!-- Work Email Field -->
+              <div class="space-y-1.5">
+                <label class="block text-xs font-semibold text-indigo-main" for="work-email"
+                  >Work Email</label
+                >
+                <div class="relative">
+                  <input
+                    class="w-full h-11 px-3.5 bg-surface-card border border-warm-border rounded-lg text-sm text-indigo-main placeholder:text-warm-gray/60 focus:outline-none focus:border-dusk-blue focus:ring-2 focus:ring-dusk-blue/20 transition-all shadow-sm"
+                    id="work-email"
+                    name="email"
+                    placeholder="name@organisation.com"
+                    type="email"
+                    autocomplete="email"
+                  />
+                </div>
+                <p
+                  class="hidden text-xs text-red-600 mt-1 flex items-center gap-1 font-medium"
+                  id="email-error"
+                ></p>
+              </div>
+
+              <!-- Password Field with Visibility Toggle -->
+              <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <label class="block text-xs font-semibold text-indigo-main" for="login-password"
+                    >Password</label
+                  >
+                  <a
+                    class="text-xs font-medium text-dusk-blue hover:text-indigo-main hover:underline transition-colors"
+                    href="#"
+                    onclick="handleForgotPassword(event)"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+                <div class="relative flex items-center">
+                  <input
+                    class="w-full h-11 pl-3.5 pr-11 bg-surface-card border border-warm-border rounded-lg text-sm text-indigo-main placeholder:text-warm-gray/60 focus:outline-none focus:border-dusk-blue focus:ring-2 focus:ring-dusk-blue/20 transition-all shadow-sm"
+                    id="login-password"
+                    name="password"
+                    placeholder="••••••••••••"
+                    type="password"
+                    autocomplete="current-password"
+                  />
+                  <button
+                    aria-label="Toggle password visibility"
+                    class="absolute right-2.5 text-warm-gray hover:text-indigo-main p-1.5 rounded-md hover:bg-fawn-surface transition-colors flex items-center justify-center focus:outline-none"
+                    id="toggle-pwd-btn"
+                    onclick="togglePassword()"
+                    type="button"
+                  >
+                    <span class="material-symbols-outlined text-[18px]" id="pwd-icon"
+                      >visibility</span
+                    >
+                  </button>
+                </div>
+                <p
+                  class="hidden text-xs text-red-600 mt-1 flex items-center gap-1 font-medium"
+                  id="password-error"
+                ></p>
+              </div>
+
+              <!-- Remember this device for 30 days -->
+              <div class="pt-0.5">
+                <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    class="w-4 h-4 rounded border-warm-border text-indigo-main focus:ring-dusk-blue/30 cursor-pointer accent-indigo-main"
+                    id="remember-device"
+                    name="remember"
+                    type="checkbox"
+                  />
+                  <span class="text-xs text-warm-gray font-medium"
+                    >Remember this device for 30 days</span
+                  >
+                </label>
+              </div>
+
+              <!-- Primary Submit Button with Embedded Spinner Feedback -->
+              <button
+                class="w-full h-11 bg-indigo-main hover:bg-indigo-hover active:scale-[0.99] text-white text-sm font-semibold rounded-lg shadow-sm border border-fawn/30 transition-all duration-200 flex items-center justify-center gap-2 mt-2 group"
+                id="submit-auth-btn"
+                type="button"
+                onclick="handleFormSubmit(event)"
+              >
+                <span
+                  class="hidden material-symbols-outlined animate-spin text-base text-fawn"
+                  id="btn-spinner"
+                  >progress_activity</span
+                >
+                <span id="btn-text">Sign In</span>
+                <span
+                  class="material-symbols-outlined text-sm text-fawn group-hover:translate-x-0.5 transition-transform"
+                  id="btn-arrow"
+                  >arrow_forward</span
+                >
+              </button>
+
+              <!-- Register Redirection (Strictly preserved below form) -->
+              <div class="pt-2 text-center">
+                <p class="text-xs text-warm-gray">
+                  New to DocuVault?
+                  <a
+                    class="text-indigo-main hover:text-dusk-blue font-semibold hover:underline transition-colors ml-1"
+                    href="register.html"
+                  >
+                    Register Your Organisation
+                  </a>
+                </p>
+              </div>
+            </form>
+          </div>
+
+          <!-- ==================== RIGHT COLUMN (60% - Animated Visual & Value Tags) ==================== -->
+          <div class="lg:col-span-7 flex flex-col items-center justify-center">
+            <div
+              class="w-full rounded-2xl bg-fawn-surface border border-warm-border/80 p-6 sm:p-8 lg:p-10 shadow-sm flex flex-col items-center"
+            >
+              <!-- Animated SVG Visual -->
+              <div class="w-full flex items-center justify-center mb-6">
+                <div
+                  class="w-full max-w-lg aspect-[4/3] mx-auto drop-shadow-sm"
+                  id="animated-svg-ANIMATION_21"
+                  style="display: block"
+                >
+                  <svg
+                    height="100%"
+                    viewbox="0 0 640 520"
+                    width="100%"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      <lineargradient id="loginVaultBg" x1="0%" x2="100%" y1="0%" y2="100%">
+                        <stop offset="0%" stop-color="#FAF7F2"></stop>
+                        <stop offset="100%" stop-color="#EFE6DA"></stop>
+                      </lineargradient>
+                      <lineargradient id="warmLightBeam" x1="0%" x2="80%" y1="0%" y2="100%">
+                        <stop offset="0%" stop-color="#B59778" stop-opacity="0.38"></stop>
+                        <stop offset="60%" stop-color="#B59778" stop-opacity="0.12"></stop>
+                        <stop offset="100%" stop-color="#FAF8F5" stop-opacity="0.0"></stop>
+                      </lineargradient>
+                      <lineargradient id="fawnAccent" x1="0%" x2="100%" y1="0%" y2="100%">
+                        <stop offset="0%" stop-color="#C7AB8E"></stop>
+                        <stop offset="100%" stop-color="#A58463"></stop>
+                      </lineargradient>
+                      <filter height="140%" id="loginShadow" width="140%" x="-20%" y="-20%">
+                        <fedropshadow
+                          dx="0"
+                          dy="12"
+                          flood-color="#1E2952"
+                          flood-opacity="0.09"
+                          stddeviation="16"
+                        ></fedropshadow>
+                      </filter>
+                      <style>
+                        @keyframes armPlaceSequence {
+                          0% {
+                            transform: translate(75px, 20px) rotate(4deg);
+                          }
+                          35% {
+                            transform: translate(0px, 0px) rotate(0deg);
+                          }
+                          65% {
+                            transform: translate(0px, 0px) rotate(0deg);
+                          }
+                          85% {
+                            transform: translate(75px, 20px) rotate(4deg);
+                          }
+                          100% {
+                            transform: translate(75px, 20px) rotate(4deg);
+                          }
+                        }
+                        @keyframes folderDockSequence {
+                          0% {
+                            transform: translate(50px, 12px) rotate(2deg);
+                            opacity: 0.85;
+                          }
+                          35% {
+                            transform: translate(0px, 0px) rotate(0deg);
+                            opacity: 1;
+                          }
+                          65% {
+                            transform: translate(0px, 0px) rotate(0deg);
+                            opacity: 1;
+                          }
+                          85% {
+                            transform: translate(50px, 12px) rotate(2deg);
+                            opacity: 0.85;
+                          }
+                          100% {
+                            transform: translate(50px, 12px) rotate(2deg);
+                            opacity: 0.85;
+                          }
+                        }
+                        @keyframes lockerDoorAction {
+                          0%,
+                          30% {
+                            transform: scaleX(0.2) skewY(-8deg);
+                            transform-origin: 190px 140px;
+                            opacity: 0.4;
+                          }
+                          50%,
+                          75% {
+                            transform: scaleX(0.96) skewY(0deg);
+                            transform-origin: 190px 140px;
+                            opacity: 0.95;
+                          }
+                          88%,
+                          100% {
+                            transform: scaleX(0.2) skewY(-8deg);
+                            transform-origin: 190px 140px;
+                            opacity: 0.4;
+                          }
+                        }
+                        @keyframes successLockerGlow {
+                          0%,
+                          45% {
+                            opacity: 0.2;
+                            transform: scale(0.9);
+                          }
+                          55%,
+                          75% {
+                            opacity: 1;
+                            transform: scale(1.15);
+                            filter: drop-shadow(0 0 8px #b59778);
+                          }
+                          85%,
+                          100% {
+                            opacity: 0.2;
+                            transform: scale(0.9);
+                          }
+                        }
+                        @keyframes ambientLight {
+                          0%,
+                          100% {
+                            opacity: 0.4;
+                          }
+                          50% {
+                            opacity: 0.85;
+                          }
+                        }
+                        .arm-motion {
+                          animation: armPlaceSequence 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                          transform-origin: 520px 320px;
+                        }
+                        .folder-dock {
+                          animation: folderDockSequence 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                          transform-origin: 320px 240px;
+                        }
+                        .door-panel {
+                          animation: lockerDoorAction 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                        }
+                        .success-light {
+                          animation: successLockerGlow 7s ease-in-out infinite;
+                          transform-origin: 220px 105px;
+                        }
+                        .ambient-glow {
+                          animation: ambientLight 5s ease-in-out infinite;
+                        }
+                      </style>
+                    </defs>
+                    <!-- Ambient Backdrop Circles -->
+                    <circle
+                      class="ambient-glow"
+                      cx="320"
+                      cy="260"
+                      fill="#B59778"
+                      fill-opacity="0.14"
+                      r="230"
+                    ></circle>
+                    <circle cx="440" cy="180" fill="#2E5090" fill-opacity="0.05" r="110"></circle>
+                    <!-- Main Locker Structure -->
+                    <g filter="url(#loginShadow)">
+                      <rect
+                        fill="url(#loginVaultBg)"
+                        height="400"
+                        rx="24"
+                        stroke="#E4D9CF"
+                        stroke-width="2.5"
+                        width="370"
+                        x="70"
+                        y="50"
+                      ></rect>
+                      <rect
+                        fill="#FFFFFF"
+                        height="380"
+                        rx="20"
+                        stroke="#EDE4DA"
+                        stroke-width="1.5"
+                        width="350"
+                        x="80"
+                        y="60"
+                      ></rect>
+                      <rect
+                        fill="#FAF7F2"
+                        height="42"
+                        rx="20"
+                        stroke="#E4D9CF"
+                        stroke-width="1"
+                        width="350"
+                        x="80"
+                        y="60"
+                      ></rect>
+                      <circle class="ambient-glow" cx="106" cy="81" fill="#2E5090" r="5"></circle>
+                      <text
+                        fill="#1E2952"
+                        font-family="system-ui, -apple-system, sans-serif"
+                        font-size="12"
+                        font-weight="600"
+                        letter-spacing="0.3"
+                        x="122"
+                        y="86"
+                      >
+                        DOCUVAULT ENCLAVE COMPARTMENT 04
+                      </text>
+                      <g class="success-light">
+                        <circle cx="395" cy="81" fill="#B59778" fill-opacity="0.3" r="9"></circle>
+                        <circle cx="395" cy="81" fill="#B59778" r="5"></circle>
+                        <path
+                          d="M 393 81 L 394.5 82.5 L 397.5 79.5"
+                          fill="none"
+                          stroke="#FFFFFF"
+                          stroke-linecap="round"
+                          stroke-width="1.2"
+                        ></path>
+                      </g>
+                      <rect
+                        fill="#FAF8F5"
+                        height="295"
+                        rx="14"
+                        stroke="#E4D9CF"
+                        stroke-width="1.5"
+                        width="310"
+                        x="100"
+                        y="118"
+                      ></rect>
+                      <polygon
+                        fill="url(#warmLightBeam)"
+                        points="100,118 410,118 410,413 100,413"
+                      ></polygon>
+                      <line
+                        stroke="#E4D9CF"
+                        stroke-width="1.5"
+                        x1="100"
+                        x2="410"
+                        y1="210"
+                        y2="210"
+                      ></line>
+                      <line
+                        stroke="#E4D9CF"
+                        stroke-width="1.5"
+                        x1="100"
+                        x2="410"
+                        y1="305"
+                        y2="305"
+                      ></line>
+                      <rect fill="#1E2952" height="72" rx="4" width="22" x="125" y="130"></rect>
+                      <rect
+                        fill="#FFFFFF"
+                        fill-opacity="0.35"
+                        height="18"
+                        rx="2"
+                        width="12"
+                        x="130"
+                        y="138"
+                      ></rect>
+                      <circle cx="136" cy="186" fill="#B59778" r="3"></circle>
+                      <rect
+                        fill="url(#fawnAccent)"
+                        height="78"
+                        rx="4"
+                        width="24"
+                        x="151"
+                        y="124"
+                      ></rect>
+                      <rect
+                        fill="#FFFFFF"
+                        fill-opacity="0.5"
+                        height="22"
+                        rx="2"
+                        width="14"
+                        x="156"
+                        y="132"
+                      ></rect>
+                      <circle cx="163" cy="186" fill="#FFFFFF" r="3"></circle>
+                      <rect fill="#2E5090" height="67" rx="4" width="20" x="179" y="135"></rect>
+                      <rect
+                        fill="#FFFFFF"
+                        fill-opacity="0.4"
+                        height="15"
+                        rx="2"
+                        width="12"
+                        x="183"
+                        y="142"
+                      ></rect>
+                      <circle cx="189" cy="186" fill="#B59778" r="3"></circle>
+                      <rect
+                        fill="#FAF6F0"
+                        height="12"
+                        rx="3"
+                        stroke="#E4D9CF"
+                        stroke-width="1.2"
+                        width="140"
+                        x="125"
+                        y="365"
+                      ></rect>
+                      <rect
+                        fill="#FFFFFF"
+                        height="14"
+                        rx="3"
+                        stroke="#E4D9CF"
+                        stroke-width="1.2"
+                        width="155"
+                        x="120"
+                        y="375"
+                      ></rect>
+                      <rect
+                        fill="#1E2952"
+                        height="16"
+                        rx="4"
+                        stroke="#1E2952"
+                        stroke-width="1"
+                        width="165"
+                        x="115"
+                        y="387"
+                      ></rect>
+                      <path
+                        d="M 235 387 L 245 387 L 245 408 L 240 403 L 235 408 Z"
+                        fill="#B59778"
+                      ></path>
+                      <rect
+                        fill="#B59778"
+                        fill-opacity="0.6"
+                        height="4"
+                        rx="2"
+                        width="180"
+                        x="115"
+                        y="295"
+                      ></rect>
+                      <g class="folder-dock">
+                        <path
+                          d="M 200 225 L 240 225 L 252 237 L 335 237 C 340 237, 344 241, 344 246 L 344 290 C 344 295, 340 299, 335 299 L 200 299 C 195 299, 191 295, 191 290 L 191 234 C 191 229, 195 225, 200 225 Z"
+                          fill="#B59778"
+                          stroke="#8F7253"
+                          stroke-width="2"
+                        ></path>
+                        <rect
+                          fill="#FFFFFF"
+                          height="40"
+                          rx="3"
+                          stroke="#E4D9CF"
+                          stroke-width="1.2"
+                          width="105"
+                          x="210"
+                          y="215"
+                        ></rect>
+                        <line
+                          stroke="#B59778"
+                          stroke-linecap="round"
+                          stroke-width="2"
+                          x1="220"
+                          x2="280"
+                          y1="226"
+                          y2="226"
+                        ></line>
+                        <line
+                          stroke="#1E2952"
+                          stroke-linecap="round"
+                          stroke-width="1.8"
+                          x1="220"
+                          x2="300"
+                          y1="234"
+                          y2="234"
+                        ></line>
+                        <line
+                          stroke="#B59778"
+                          stroke-linecap="round"
+                          stroke-width="1.8"
+                          x1="220"
+                          x2="265"
+                          y1="242"
+                          y2="242"
+                        ></line>
+                        <rect
+                          fill="#FFFFFF"
+                          fill-opacity="0.95"
+                          height="22"
+                          rx="4"
+                          stroke="#E4D9CF"
+                          stroke-width="1"
+                          width="70"
+                          x="215"
+                          y="255"
+                        ></rect>
+                        <text
+                          fill="#1E2952"
+                          font-family="system-ui, -apple-system, sans-serif"
+                          font-size="10.5"
+                          font-weight="700"
+                          letter-spacing="0.5"
+                          x="225"
+                          y="270"
+                        >
+                          EXECUTIVE ARCHIVE
+                        </text>
+                        <circle cx="315" cy="272" fill="#1E2952" r="11"></circle>
+                        <circle cx="315" cy="272" fill="#B59778" r="7"></circle>
+                      </g>
+                      <g class="door-panel">
+                        <rect
+                          fill="#FAF6F0"
+                          fill-opacity="0.75"
+                          height="300"
+                          rx="8"
+                          stroke="#B59778"
+                          stroke-width="2"
+                          width="125"
+                          x="75"
+                          y="115"
+                        ></rect>
+                        <line
+                          stroke="#FFFFFF"
+                          stroke-opacity="0.8"
+                          stroke-width="2"
+                          x1="100"
+                          x2="100"
+                          y1="130"
+                          y2="395"
+                        ></line>
+                        <line
+                          stroke="#E4D9CF"
+                          stroke-width="1.5"
+                          x1="135"
+                          x2="135"
+                          y1="130"
+                          y2="395"
+                        ></line>
+                        <rect
+                          fill="#B59778"
+                          height="60"
+                          rx="6"
+                          stroke="#1E2952"
+                          stroke-width="1.5"
+                          width="12"
+                          x="180"
+                          y="235"
+                        ></rect>
+                        <circle cx="186" cy="265" fill="#FFFFFF" r="3"></circle>
+                      </g>
+                      <g class="arm-motion">
+                        <path
+                          d="M 640 375 L 430 295 L 405 325 L 640 440 Z"
+                          fill="#1E2952"
+                          stroke="#151D3B"
+                          stroke-width="2"
+                        ></path>
+                        <polygon
+                          fill="#FFFFFF"
+                          points="432,293 410,285 398,310 418,318"
+                          stroke="#E4D9CF"
+                          stroke-width="1.5"
+                        ></polygon>
+                        <circle cx="414" cy="302" fill="#B59778" r="3"></circle>
+                        <path
+                          d="M 412,286 C 395,278 375,272 360,268 C 352,266 348,272 352,277 C 358,284 372,295 385,302 C 392,306 404,310 412,312 Z"
+                          fill="#E8C9B0"
+                        ></path>
+                        <path
+                          d="M 378,276 C 362,268 344,260 336,262 C 330,263 331,270 338,274 C 348,279 365,286 376,288 Z"
+                          fill="#DEBBA0"
+                        ></path>
+                        <path
+                          d="M 368,282 C 348,280 328,278 322,284 C 319,287 322,292 330,293 C 342,294 360,295 372,296 Z"
+                          fill="#DEBBA0"
+                        ></path>
+                        <path
+                          d="M 374,292 C 355,293 334,293 330,299 C 327,303 331,307 338,307 C 350,306 366,303 376,302 Z"
+                          fill="#CFAC91"
+                        ></path>
+                      </g>
+                      <g transform="translate(180, 455)">
+                        <rect
+                          fill="#FFFFFF"
+                          filter="url(#loginShadow)"
+                          height="34"
+                          rx="17"
+                          stroke="#E4D9CF"
+                          stroke-width="1.5"
+                          width="240"
+                          x="0"
+                          y="0"
+                        ></rect>
+                        <circle cx="18" cy="17" fill="#FAF6F0" r="7"></circle>
+                        <circle cx="18" cy="17" fill="#2E5090" r="3.5"></circle>
+                        <text
+                          fill="#1E2952"
+                          font-family="system-ui, -apple-system, sans-serif"
+                          font-size="12"
+                          font-weight="600"
+                          x="34"
+                          y="21.5"
+                        >
+                          Active Deposit Verified
+                        </text>
+                        <rect fill="#B59778" height="9" rx="2" width="10" x="210" y="13"></rect>
+                        <path
+                          d="M 212 13 L 212 10.5 C 212 8.8 214 7.5 215 7.5 C 216 7.5 218 8.8 218 10.5 L 218 13"
+                          fill="none"
+                          stroke="#B59778"
+                          stroke-width="1.3"
+                        ></path>
+                      </g>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Heading & Supporting Text -->
+              <div class="w-full max-w-lg text-center">
+                <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-indigo-main mb-2">
+                  Your Documents. Your Secure Space.
+                </h2>
+                <p class="text-xs sm:text-sm text-warm-gray leading-relaxed mb-6">
+                  Keep your important files organised, secure and accessible to authorised people.
+                </p>
+
+                <!-- 3 Clean Value Tags -->
+                <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5">
+                  <div
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-card border border-warm-border text-indigo-main shadow-xs"
+                  >
+                    <span class="material-symbols-outlined text-fawn text-base">lock</span>
+                    <span class="text-xs font-semibold">Encrypted Storage</span>
+                  </div>
+                  <div
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-card border border-warm-border text-indigo-main shadow-xs"
+                  >
+                    <span class="material-symbols-outlined text-dusk-blue text-base">history</span>
+                    <span class="text-xs font-semibold">Audit Logging</span>
+                  </div>
+                  <div
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-card border border-warm-border text-indigo-main shadow-xs"
+                  >
+                    <span class="material-symbols-outlined text-fawn text-base">shield_person</span>
+                    <span class="text-xs font-semibold">Granular Access</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="w-full bg-surface-card border-t border-warm-border/60 py-5">
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-warm-gray"
+      >
+        <p>© 2025 DOCUVAULT Systems Inc. All rights reserved.</p>
+        <div class="flex items-center gap-5 font-medium">
+          <a class="hover:text-indigo-main transition-colors" href="#">Privacy Policy</a>
+          <a class="hover:text-indigo-main transition-colors" href="#">Terms of Service</a>
+          <a class="hover:text-indigo-main transition-colors" href="#">Contact Support</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Toast Notification Library -->
+    <script src="/toast.js"></script>
+
+    <!-- ==================== AUTH & INTERACTIVITY SCRIPTS ==================== -->
+    <script>
+      // Cinematic 4.5s Intro Sequence Controller
+      (function initIntroSequence() {
+        const overlay = document.getElementById('intro-overlay');
+        const introBrand = document.getElementById('intro-brand');
+        const introLockerBox = document.getElementById('intro-locker-box');
+        const doorLeft = document.getElementById('intro-door-left');
+        const doorRight = document.getElementById('intro-door-right');
+        const lockMech = document.getElementById('intro-lock-mechanism');
+        const warmGlow = document.getElementById('intro-warm-glow');
+        const introDossier = document.getElementById('intro-dossier');
+        const introCaption = document.getElementById('intro-caption');
+        const skipBtn = document.getElementById('skip-intro-btn');
+        const replayBtn = document.getElementById('replay-intro-btn');
+
+        const STORAGE_KEY = 'docuvault_seen_intro';
+        let timers = [];
+
+        function clearTimers() {
+          timers.forEach((t) => clearTimeout(t));
+          timers = [];
+        }
+
+        function closeIntro() {
+          clearTimers();
+          if (!overlay) return;
+          overlay.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(() => {
+            overlay.style.display = 'none';
+          }, 700);
+          try {
+            sessionStorage.setItem(STORAGE_KEY, 'true');
+          } catch (e) {}
+        }
+
+        function runAnimation() {
+          if (!overlay) return;
+          clearTimers();
+          overlay.style.display = 'flex';
+          overlay.classList.remove('opacity-0', 'pointer-events-none');
+
+          introBrand.className =
+            'opacity-0 transform translate-y-3 transition-all duration-700 flex flex-col items-center mb-6';
+          introLockerBox.className =
+            'opacity-0 transform scale-95 transition-all duration-700 relative w-80 h-60 rounded-2xl bg-surface-card border-2 border-warm-border p-4 flex flex-col items-center justify-center overflow-hidden shadow-lg';
+          doorLeft.style.transform = 'scaleX(1)';
+          doorRight.style.transform = 'scaleX(1)';
+          lockMech.classList.remove('rotating-lock');
+          lockMech.innerHTML = '<span class="material-symbols-outlined text-sm">lock</span>';
+          warmGlow.classList.remove('opacity-100');
+          warmGlow.classList.add('opacity-0');
+          introDossier.className =
+            'opacity-0 transform translate-x-12 translate-y-4 transition-all duration-800 flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-surface-card border border-warm-border shadow-md w-52 mx-auto';
+          introCaption.className =
+            'opacity-0 transition-opacity duration-500 text-xs font-medium text-warm-gray mt-5 h-4';
+          introCaption.textContent = 'Initializing secure digital repository...';
+
+          // 1. DOCUVAULT logo mark smoothly fades in (0.3s)
+          timers.push(
+            setTimeout(() => {
+              introBrand.classList.remove('opacity-0', 'translate-y-3');
+              introBrand.classList.add('opacity-100', 'translate-y-0');
+            }, 300),
+          );
+
+          // 2. Digital locker appears (1.0s)
+          timers.push(
+            setTimeout(() => {
+              introLockerBox.classList.remove('opacity-0', 'scale-95');
+              introLockerBox.classList.add('opacity-100', 'scale-100');
+              introCaption.textContent = 'Locating encrypted compartment...';
+              introCaption.classList.remove('opacity-0');
+            }, 1000),
+          );
+
+          // 3. Rotating lock mechanism unlocks (1.8s)
+          timers.push(
+            setTimeout(() => {
+              lockMech.classList.add('rotating-lock');
+              introCaption.textContent = 'Unlocking compartment security seals...';
+              setTimeout(() => {
+                lockMech.innerHTML =
+                  '<span class="material-symbols-outlined text-sm text-fawn">lock_open</span>';
+              }, 450);
+            }, 1800),
+          );
+
+          // 4. Locker door smoothly opens with warm soft fawn light (2.5s)
+          timers.push(
+            setTimeout(() => {
+              doorLeft.style.transform = 'scaleX(0.08)';
+              doorRight.style.transform = 'scaleX(0.08)';
+              warmGlow.classList.remove('opacity-0');
+              warmGlow.classList.add('opacity-100');
+              introCaption.textContent = 'Secure enclave accessible.';
+            }, 2500),
+          );
+
+          // 5. Document dossier folder docks into locker (3.2s)
+          timers.push(
+            setTimeout(() => {
+              introDossier.classList.remove('opacity-0', 'translate-x-12', 'translate-y-4');
+              introDossier.classList.add('opacity-100', 'translate-x-0', 'translate-y-0');
+              introCaption.textContent = 'Dossier secured. Entering workspace...';
+            }, 3200),
+          );
+
+          // 6. Transition into login (~4.5s)
+          timers.push(
+            setTimeout(() => {
+              closeIntro();
+            }, 4500),
+          );
+        }
+
+        const prefersReduced =
+          window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let seen = false;
+        try {
+          seen = sessionStorage.getItem(STORAGE_KEY) === 'true';
+        } catch (e) {}
+
+        if (prefersReduced || seen) {
+          closeIntro();
+        } else {
+          runAnimation();
+        }
+
+        if (skipBtn) skipBtn.addEventListener('click', closeIntro);
+        if (replayBtn) replayBtn.addEventListener('click', runAnimation);
+      })();
+
+      // Password visibility toggle
+      function togglePassword() {
+        const pwd = document.getElementById('login-password');
+        const icon = document.getElementById('pwd-icon');
+        if (!pwd || !icon) return;
+        if (pwd.type === 'password') {
+          pwd.type = 'text';
+          icon.textContent = 'visibility_off';
+        } else {
+          pwd.type = 'password';
+          icon.textContent = 'visibility';
+        }
+      }
+
+      function handleForgotPassword(e) {
+        e.preventDefault();
+        DocuVaultToast.info(
+          'Please contact your organization administrator to reset your credentials.',
+          'Password Recovery',
+        );
+      }
+
+      // Inline Validation Helpers
+      const emailInput = document.getElementById('work-email');
+      const passwordInput = document.getElementById('login-password');
+      const emailError = document.getElementById('email-error');
+      const passwordError = document.getElementById('password-error');
+
+      function setFieldError(input, errorEl, message) {
+        input.classList.add('input-error');
+        input.style.borderColor = '#dc2626';
+        errorEl.innerHTML = `<span class="material-symbols-outlined text-[14px] text-red-600">error</span><span>${message}</span>`;
+        errorEl.classList.remove('hidden');
+        errorEl.style.display = 'flex';
+      }
+
+      function clearFieldError(input, errorEl) {
+        input.classList.remove('input-error');
+        input.style.borderColor = '';
+        errorEl.classList.add('hidden');
+        errorEl.style.display = 'none';
+        errorEl.textContent = '';
+      }
+
+      // Real-time input clearing
+      emailInput.addEventListener('input', () => clearFieldError(emailInput, emailError));
+      passwordInput.addEventListener('input', () => clearFieldError(passwordInput, passwordError));
+
+      // Keydown Enter listener to prevent default submit and run handleFormSubmit
+      [emailInput, passwordInput].forEach((input) => {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleFormSubmit(e);
+          }
+        });
+      });
+
+      // Form submit event handler
+      const authForm = document.getElementById('docuvault-auth-form');
+      if (authForm) {
+        authForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          handleFormSubmit(e);
+          return false;
+        });
+      }
+
+      // Blur validation
+      emailInput.addEventListener('blur', () => {
+        const val = emailInput.value.trim();
+        if (!val) {
+          setFieldError(emailInput, emailError, 'Work email is required.');
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+          setFieldError(emailInput, emailError, 'Please enter a valid work email address.');
+        }
+      });
+
+      passwordInput.addEventListener('blur', () => {
+        const val = passwordInput.value;
+        if (!val) {
+          setFieldError(passwordInput, passwordError, 'Password is required.');
+        }
+      });
+
+      // Clean any accidental GET parameters from the URL immediately
+      if (
+        window.location.search &&
+        !window.location.search.includes('expired=1') &&
+        !window.location.search.includes('registered=1')
+      ) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      // Check URL parameters for session state notifications (Session Expired, Registered)
+      window.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('expired') === '1' || params.get('reason') === 'session_expired') {
+          DocuVaultToast.warning(
+            'Your security session has expired. Please sign in again to continue.',
+            'Session Expired',
+          );
+        } else if (params.get('registered') === '1') {
+          DocuVaultToast.success(
+            'Organisation registered successfully! You can now sign in with your administrator credentials.',
+            'Registration Complete',
+          );
+        }
+
+        // Clean URL without refresh
+        if (params.has('expired') || params.has('reason') || params.has('registered')) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      });
+
+      // Handle Form Submission with Real Backend Integration
+      async function handleFormSubmit(e) {
+        e.preventDefault();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        let hasError = false;
+
+        // 1. Client-Side Validation
+        if (!email) {
+          setFieldError(emailInput, emailError, 'Work email is required.');
+          hasError = true;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setFieldError(emailInput, emailError, 'Please enter a valid work email address.');
+          hasError = true;
+        }
+
+        if (!password) {
+          setFieldError(passwordInput, passwordError, 'Password is required.');
+          hasError = true;
+        }
+
+        if (hasError) return;
+
+        // 2. Loading State in Submit Button
+        const btn = document.getElementById('submit-auth-btn');
+        const spinner = document.getElementById('btn-spinner');
+        const btnText = document.getElementById('btn-text');
+        const btnArrow = document.getElementById('btn-arrow');
+
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+        spinner.classList.remove('hidden');
+        btnArrow.classList.add('hidden');
+        btnText.textContent = 'Verifying credentials...';
+
+        try {
+          const response = await fetch('/api/v1/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+
+          const result = await response.json().catch(() => null);
+
+          if (response.ok && result?.success) {
+            // Success Feedback
+            const { accessToken, user } = result.data;
+            try {
+              localStorage.setItem('dv_token', accessToken);
+              localStorage.setItem('dv_user', JSON.stringify(user));
+              if (document.getElementById('remember-device').checked) {
+                localStorage.setItem('dv_remember', 'true');
+              } else {
+                localStorage.removeItem('dv_remember');
+              }
+            } catch (storageErr) {
+              console.warn('Storage warning:', storageErr);
+            }
+
+            btnText.textContent = 'Authenticated';
+            DocuVaultToast.success(
+              'Authentication verified. Decrypting locker workspace...',
+              'Welcome Back',
+            );
+
+            // Smooth transition into home workspace/application
+            setTimeout(() => {
+              window.location.href = '/home.html';
+            }, 1100);
+            return;
+          }
+
+          // Error Feedback Handling based on HTTP status codes and error bodies
+          const errorCode = result?.error?.code || '';
+          const errorMessage = result?.error?.message || '';
+
+          if (response.status === 401) {
+            if (
+              errorMessage.toLowerCase().includes('inactive') ||
+              errorMessage.toLowerCase().includes('deactivated')
+            ) {
+              DocuVaultToast.error(
+                'Your account has been deactivated. Please contact your organization administrator.',
+                'Account Inactive',
+              );
+            } else {
+              DocuVaultToast.error(
+                'Invalid email or password. Please verify your credentials and try again.',
+                'Authentication Failed',
+              );
+              setFieldError(passwordInput, passwordError, 'Invalid email or password.');
+            }
+          } else if (response.status === 429 || errorCode === 'RATE_LIMITED') {
+            DocuVaultToast.warning(
+              'Too many login attempts. Please wait 15 minutes before trying again.',
+              'Access Throttled',
+            );
+          } else if (response.status === 400) {
+            DocuVaultToast.error(
+              errorMessage || 'Please check your login details and try again.',
+              'Validation Error',
+            );
+          } else {
+            DocuVaultToast.error(
+              errorMessage || 'An unexpected error occurred during sign in. Please try again.',
+              'Authentication Error',
+            );
+          }
+        } catch (networkErr) {
+          // Network Connection Error Feedback
+          console.error('Login network error:', networkErr);
+          DocuVaultToast.error(
+            'Unable to reach the DocuVault server. Please check your network connection.',
+            'Connection Error',
+          );
+        } finally {
+          // Reset Button Loading State if not successfully authenticated
+          if (btnText.textContent !== 'Authenticated') {
+            btn.disabled = false;
+            btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            spinner.classList.add('hidden');
+            btnArrow.classList.remove('hidden');
+            btnText.textContent = 'Sign In';
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

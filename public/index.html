@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>DOCUVAULT - Digital Locker</title>
+    <script>
+      // If authenticated, navigate to home workspace; otherwise go to login
+      try {
+        const token = localStorage.getItem('dv_token');
+        if (token) {
+          window.location.replace('/home.html');
+        } else {
+          window.location.replace('/login.html');
+        }
+      } catch (e) {
+        window.location.replace('/login.html');
+      }
+    </script>
+  </head>
+  <body
+    style="
+      background-color: #faf8f5;
+      font-family: sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    "
+  >
+    <p style="color: #6e6a64; font-size: 14px">Loading DOCUVAULT...</p>
+  </body>
+</html>
