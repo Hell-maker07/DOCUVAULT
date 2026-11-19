@@ -19,18 +19,21 @@ department and clearance level** allow it. Access is **denied by default**, ever
 
 Built step by step, alternating between members. Each step is committed as soon as it works.
 
-| #   | Owner     | Step                                                   | Status  |
-| --- | --------- | ------------------------------------------------------ | ------- |
-| 1   | Saubhagya | Express project + identity SQL schema                  | ✅ Done |
-| 2   | Sakshi    | Vault SQL schema + immutability triggers               | ✅ Done |
-| 3   | Saubhagya | Registration & login API (JWT, bcrypt)                 | ✅ Done |
-| 4   | Sakshi    | File storage connection, multer, SHA-256 utility       | ✅ Done |
-| 5   | Saubhagya | RBAC access middleware (clearance, scope, permissions) | ✅ Done |
-| 6   | Sakshi    | Audit hash-chain logic                                 | ✅ Done |
-| 7   | Saubhagya | Ed25519 signatures (+ `signatures` table migration)    | ✅ Done |
-| 8   | Sakshi    | Document upload and verified download APIs             | ✅ Done |
-| 9   | Saubhagya | React frontend: Auth UI + Admin dashboard              | ⏳      |
-| 10  | Sakshi    | React Vault UI, upload form, audit viewer              | ⏳      |
+| #   | Owner      | Step                                                   | Status     |
+| --- | ---------- | ------------------------------------------------------ | ---------- |
+| 1   | Saubhagya  | Express project + identity SQL schema                  | ✅ Done    |
+| 2   | Sakshi     | Vault SQL schema + immutability triggers               | ✅ Done    |
+| 3   | Saubhagya  | Registration & login API (JWT, bcrypt)                 | ✅ Done    |
+| 4   | Sakshi     | File storage connection, multer, SHA-256 utility       | ✅ Done    |
+| 5   | Saubhagya  | RBAC access middleware (clearance, scope, permissions) | ✅ Done    |
+| 6   | Sakshi     | Audit hash-chain logic                                 | ✅ Done    |
+| 7   | Saubhagya  | Ed25519 signatures (+ `signatures` table migration)    | ✅ Done    |
+| 8   | Sakshi     | Document upload and verified download APIs             | ✅ Done    |
+| 9   | Saubhagya  | React frontend: Auth UI + Admin dashboard              | ⏳         |
+| 10  | Sakshi     | React Vault UI, upload form, audit viewer              | ⏳         |
+| 11  | Unassigned | Platform Super Admin Dashboard                         | 📋 Planned |
+
+> **Note on Step 11:** Step 11 is an additional standalone platform phase planned after Steps 9 and 10. It is currently unassigned, separate from the responsibilities of Member 1 and Member 2, and represents a planned specification rather than existing functionality.
 
 ## Tech stack
 
@@ -204,6 +207,28 @@ Step 8 implements physical file storage intake, versioning, full-text access sea
   - `GET /api/v1/documents/stats/multi-versions`: Documents with multiple versions (Q05).
   - `GET /api/v1/documents/stats/ranked-positions`: Positions ranked by documents opened (Q12).
 - Proven by comprehensive acceptance tests in `tests/documents.test.js` (26 tests covering upload, versioning, concurrency, download verification, tamper detection, search, and analytics).
+
+### Platform Super Admin Dashboard (Step 11 — Planned Phase)
+
+> **Status:** 📋 Planned (Standalone phase scheduled after Steps 9 and 10)  
+> **Ownership:** Unassigned (Separate from existing responsibilities of Member 1 and Member 2)  
+> **Documentation:** Master specification documented in [`docs/STEP11-PLAN.md`](docs/STEP11-PLAN.md)  
+> **Implementation Notice:** Planning and architectural specification only. No runtime application code, database migrations, or APIs have been implemented yet.
+
+Step 11 defines a dedicated administrative capability for the team managing the overarching DocuVault multi-tenant infrastructure:
+
+- **Clear Role & Access Boundaries:**
+  - **Organisation Admin:** Manages employees, functional departments, positions, clearance assignments, and granular permissions strictly within their own organisation's enclave.
+  - **Platform Super Admin:** Manages the DocuVault platform and maintains high-level operational oversight across all registered tenant organisations and employees.
+- **Strict Isolation Guarantees:**
+  - Organisation administrators cannot access the super-admin interface or platform endpoints.
+  - Platform super administrators use a separate authentication flow and cannot bypass security or privacy controls without explicit authorization and immutable audit logging.
+- **Planned Capabilities:**
+  1. **Platform Overview:** Global tenant counts (active, suspended), system health, and cross-platform metric cards.
+  2. **Organisation Management:** Searchable tenant registry, legal entity detail inspector, and rule-based lifecycle management (activation, suspension, deactivation).
+  3. **Platform Administration:** Platform-level runtime configurations, service health diagnostics, and operational telemetry.
+  4. **Super Admin Access Control:** Dedicated platform roles, permissions, and session handling separate from tenant user authentication.
+  5. **Platform Audit & Security:** Cryptographic traceability for all platform-level actions, tenant status transitions, and administrative interventions.
 
 ## API
 
